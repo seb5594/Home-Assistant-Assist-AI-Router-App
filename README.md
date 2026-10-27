@@ -1,42 +1,63 @@
-# Example App
+<!-- header:begin (generated from project metadata) -->
+<h1 align="center">Assist AI Router</h1>
 
-<!-- badges:begin (generated from project metadata) -->
-[![version](https://img.shields.io/static/v1?label=version&message=0.1.0&color=1877A5&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/releases) [![released](https://img.shields.io/github/release-date-pre/seb5594/Home-Assistant-App-Template?label=released&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/releases) [![build](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-App-Template/ci.yml?branch=main&label=build&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/actions/workflows/ci.yml)<br>
-[![stars](https://img.shields.io/github/stars/seb5594/Home-Assistant-App-Template?label=stars&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/stargazers) [![issues](https://img.shields.io/github/issues/seb5594/Home-Assistant-App-Template?label=issues&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/issues) [![updated](https://img.shields.io/github/last-commit/seb5594/Home-Assistant-App-Template?label=updated&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/commits/main) ![image pulls](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-App-Template%2Fbadges%2Fimage-pulls.json&style=flat)<br>
-![arch](https://img.shields.io/static/v1?label=arch&message=amd64%20%C2%B7%20aarch64%20%C2%B7%20armv7%20%C2%B7%20armhf%20%C2%B7%20i386&color=157F71&style=flat)<br>
-![mounts (read-only)](https://img.shields.io/static/v1?label=mounts%20%28read-only%29&message=config&color=157F71&style=flat)<br>
-![stage](https://img.shields.io/static/v1?label=stage&message=stable&color=2F855A&style=flat) ![options](https://img.shields.io/static/v1?label=options&message=1&color=1877A5&style=flat)<br>
-![image size](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-App-Template%2Fbadges%2Fimage-size.json&style=flat) ![runtime tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-App-Template%2Fbadges%2Fruntime-tests.json&style=flat) ![last build](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-App-Template%2Fbadges%2Flast-build.json&style=flat)<br>
-[![Home Assistant](https://img.shields.io/static/v1?label=Home%20Assistant&message=Add%20app%20repository&color=18BCF2&style=flat&logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps)
-<!-- badges:end -->
+<p align="center">
+  <img src="https://raw.githubusercontent.com/seb5594/Home-Assistant-Assist-AI-Router-App/dev/assist_ai_router/logo.png" alt="Assist AI Router" width="160" height="160">
+</p>
 
-A starting point for a Home Assistant app with the shared pipeline already wired in: validation,
-multi-architecture build, runtime tests, GHCR release and README badges.
+---
 
-## Using this template
+<p align="center">
+  <a href="https://paypal.me/seb5594"><img src="https://img.shields.io/static/v1?label=Support&amp;message=PayPal&amp;color=0070BA&amp;logo=paypal&amp;logoColor=white&amp;style=for-the-badge" alt="PayPal" height="40"></a>
+  <a href="https://buymeacoffee.com/seb5594"><img src="https://img.shields.io/static/v1?label=Support&amp;message=Buy%20Me%20a%20Coffee&amp;color=FFDD00&amp;logo=buy-me-a-coffee&amp;logoColor=black&amp;style=for-the-badge" alt="Buy Me a Coffee" height="40"></a><br>
+  <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps"><img src="https://img.shields.io/static/v1?label=Home%20Assistant&amp;message=Add%20app%20repository&amp;color=18BCF2&amp;logo=homeassistant&amp;logoColor=white&amp;style=for-the-badge" alt="Home Assistant" height="28"></a>
+  <img src="https://img.shields.io/static/v1?label=home%20assistant&amp;message=%E2%89%A5%202026.8.0&amp;color=1877A5&amp;style=for-the-badge" alt="home assistant" height="28">
+  <a href="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App/releases"><img src="https://img.shields.io/static/v1?label=version&amp;message=2026-10-27&amp;color=1877A5&amp;style=for-the-badge" alt="version" height="28"></a><br>
+  <img src="https://img.shields.io/static/v1?label=arch&amp;message=amd64%20%C2%B7%20aarch64&amp;color=157F71&amp;style=flat" alt="arch" height="20">
+  <img src="https://img.shields.io/static/v1?label=stage&amp;message=experimental&amp;color=2F855A&amp;style=flat" alt="stage" height="20">
+  <img src="https://img.shields.io/static/v1?label=ingress&amp;message=enabled&amp;color=7C3AED&amp;style=flat" alt="ingress" height="20"><br>
+  <a href="https://github.com/seb5594/Home-Assistant-Apps/stargazers"><img src="https://img.shields.io/github/stars/seb5594/Home-Assistant-Assist-AI-Router-App?label=stars&amp;style=flat" alt="stars" height="20"></a>
+  <a href="https://github.com/seb5594/Home-Assistant-Apps/issues"><img src="https://img.shields.io/github/issues/seb5594/Home-Assistant-Assist-AI-Router-App?label=issues&amp;style=flat" alt="issues" height="20"></a>
+  <a href="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Assist-AI-Router-App/ci.yml?branch=dev&amp;label=checks&amp;style=flat" alt="checks" height="20"></a>
+  <a href="https://github.com/seb5594/Home-Assistant-Apps#license"><img src="https://img.shields.io/github/license/seb5594/Home-Assistant-Assist-AI-Router-App?label=license&amp;style=flat" alt="license" height="20"></a>
+</p>
+<!-- header:end -->
 
-1. Create a repository from this template. Name it `Home-Assistant-<project>-App` so the
-   [app catalog](https://github.com/seb5594/Home-Assistant-Apps) picks it up.
-2. Rename `example-app/` and set `slug`, `name`, `url`, `description` and the options in `config.yaml`.
-   The folder name must equal the slug.
-3. Replace the repository URL in the `Dockerfile` label and change the greeting logic in `run.sh`.
-   Every `apk` package is pinned through a build argument with a legacy twin (`ARG JQ_VERSION=` and
-   `ARG JQ_VERSION_LEGACY=`): the twin carries the Alpine 3.22 version used for `armv7`, `armhf` and `i386`.
-   Remove those architectures from `config.yaml` to drop the twins.
-4. Adjust `.github/tests/runtime.sh`; it runs inside the built image.
-5. Regenerate the badge block above and commit the result:
+**Mehrere KI-Anbieter. Ein Zugang für Home Assistant Assist.**
 
-   ```bash
-   git clone https://github.com/seb5594/hass-workflows .engine   # private; needs access
-   python .engine/.scripts/readme.py
-   ```
+Die experimentelle Home-Assistant-App bündelt LiteLLM-kompatible Anbieter hinter einem lokalen Endpunkt. Profile, Schlüssel, Modelle, Prioritäten und Limits verwaltest du in der Ingress-Weboberfläche. Die native **LiteLLM-Integration** verbindet den Router mit Assist.
 
-6. Raise `version` in `config.yaml` and the `BUILD_VERSION` default in the `Dockerfile` together
-   with a new `CHANGELOG.md` entry for every release.
+Version **2026-10-27** · LiteLLM **1.106.4** · amd64 / aarch64 · Home Assistant **2026.8+**
 
-The only workflow, `.github/workflows/ci.yml`, calls the shared engine at a pinned commit and
-needs the `ORCHESTRATION_PAT` secret. Pin base images and every `apk` package to an exact
-version; the pipeline rejects anything floating.
+* **21 Anbietervorlagen** einschließlich Groq, Gemini, Cerebras, OpenRouter, Mistral und lokaler Modelle.
+* **Automatisches Ausweichen** bei Rate-Limits und Ausfällen, persistente Abkühlzeiten und gemeinsame Kontingentgruppen.
+* **Vier Routing-Presets** und eigene Regeln mit Modellalias und Tool-Bedingung.
+* **Verbrauch pro API-Anfrage** mit Eingabe-/Ausgabetokens, Dauer, Fallback-Historie und CSV-Export.
+* **Ohne Textdateien**: Webänderungen landen in der App-Konfiguration; vorhandene `!secret`-Verweise bleiben erhalten.
+* **Geführte Assist-Einrichtung** über die native LiteLLM-Integration und optionale MCP-Einrichtung.
+* **Deutsch und Englisch**, stabile Versionsprüfung und per Tag plus Digest gepinnte LiteLLM-Komponente.
+
+## Schnellstart
+
+1. App installieren/starten und Weboberfläche öffnen.
+2. Unter **Anbieter** Profile hinzufügen, Modell und Schlüssel eintragen, speichern und testen.
+3. Reihenfolge oder Routing-Preset wählen; für normale Assist-Nutzung **assist-auto** verwenden.
+4. Unter **Assist verbinden** die Router-Verbindungsdaten anzeigen und **LiteLLM in Home Assistant hinzufügen** öffnen.
+5. Im LiteLLM-Eintrag einen Konversationsagenten für **assist-auto** hinzufügen, benötigte Assist-Werkzeuge/Entitäten freigeben und diesen Agenten im Sprachassistenten auswählen.
+
+LiteLLM ist bereits enthalten. Ein zusätzlicher Proxy oder eine eigene Custom-Integration ist nicht nötig. Der interne API-Port 8000 verlangt einen eigenen Router-Schlüssel; die Verwaltung ist ausschließlich über Ingress erreichbar.
+
+## Kontingente ehrlich darstellen
+
+Die Oberfläche zeigt den lokal erfassten Verbrauch dieser App gegen deine eingetragenen Limits. Eine universelle Live-Guthabenabfrage der Anbieter gibt es in dieser Version nicht; die Anbieterportale sind verlinkt. Externe Nutzung bleibt unbekannt. Gratis-Zugang hängt vom Modell und deinem Konto ab und wird nicht durch eine Vorlage garantiert.
+
+Sind alle erlaubten Anbieter erschöpft und kein lokales Modell verfügbar, kann eine Anfrage weiterhin scheitern. Ein zusätzliches lokales, Tool-fähiges Modell verbessert die Verfügbarkeit. Prompts und Antworten werden nicht gespeichert.
+
+## Dokumentation
+
+[Deutsche Anleitung](assist_ai_router/DOCS.md) · [English guide](assist_ai_router/DOCS.en.md) · [English overview](README.en.md) · [Entwicklung und Abnahme](CONTRIBUTING.md) · [Änderungen](assist_ai_router/CHANGELOG.md)
+
+Die erste Version ist ausdrücklich **experimental**. Tests prüfen Routing, Secrets, HTTP-Zugänge und die tatsächliche LiteLLM-SDK-Anbindung; die Abnahme mit realem Home Assistant und echten Anbieter-Kontingenten steht separat an.
 
 <!-- support:begin (generated, shared text) -->
 ## Say thanks
@@ -45,5 +66,13 @@ All my projects are built in my spare time, just for the fun of it. Still, they 
 
 If my work helped you or turned out to be useful, show your appreciation with a hot drink for my next sleepless night.
 
-[![Buy Me a Coffee](https://img.shields.io/static/v1?label=Support&message=Buy%20Me%20a%20Coffee&color=FFDD00&logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://buymeacoffee.com/seb5594) [![PayPal](https://img.shields.io/static/v1?label=Support&message=PayPal&color=0070BA&logo=paypal&logoColor=white&style=for-the-badge)](https://www.paypal.com/donate/?hosted_button_id=QMQPNRENXDN26)
+[![PayPal](https://img.shields.io/static/v1?label=Support&message=PayPal&color=0070BA&logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/seb5594) [![Buy Me a Coffee](https://img.shields.io/static/v1?label=Support&message=Buy%20Me%20a%20Coffee&color=FFDD00&logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://buymeacoffee.com/seb5594)
 <!-- support:end -->
+
+<!-- license:begin (generated from the license file) -->
+## License
+
+[![license](https://img.shields.io/static/v1?label=license&message=Apache-2.0&color=5B6770&style=flat)](LICENSE)
+
+Published under the [Apache License 2.0](LICENSE).
+<!-- license:end -->

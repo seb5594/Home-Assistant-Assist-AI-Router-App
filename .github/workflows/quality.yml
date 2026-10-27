@@ -1,0 +1,23 @@
+name: Router tests
+on:
+  pull_request:
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  router:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: .github/dev/requirements-dev.txt
+      - run: python -m pip install -r .github/dev/requirements-dev.txt
+      - run: python -m unittest discover -s .github/tests -p 'test_*.py' -v
+      - run: node --check assist_ai_router/app/static/app.js

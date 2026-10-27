@@ -1,0 +1,84 @@
+configuration:
+  language:
+    name: Sprache
+  routing:
+    name: Routing & Regeln
+  providers:
+    name: Anbieterprofile
+    fields:
+      id:
+        name: Eindeutige Profil-ID
+      name:
+        name: Profilname
+      preset:
+        name: Anbietervorlage
+      model:
+        name: LiteLLM-Modell
+      api_key:
+        name: API-Schlüssel oder !secret-Verweis
+      api_base:
+        name: Eigene API-Basis-URL
+      api_version:
+        name: API-Version (z. B. Azure)
+      enabled:
+        name: Profil aktiv
+      free_only:
+        name: Für dieses Profil kostenlose Nutzung bestätigt
+      local:
+        name: Lokales Modell
+      supports_tools:
+        name: Modell unterstützt Tool-Aufrufe (Assist)
+      supports_vision:
+        name: Modell unterstützt Bildeingaben
+      rpm:
+        name: Anfragen pro Minute (RPM)
+      tpm:
+        name: Tokens pro Minute (TPM)
+      daily_tokens:
+        name: Tokens pro Tag
+      daily_requests:
+        name: Anfragen pro Tag
+      monthly_tokens:
+        name: Tokens pro Monat
+      context_tokens:
+        name: Kontextfenster in Tokens
+      input_price:
+        name: USD je 1 Mio. Eingabe-Tokens
+      output_price:
+        name: USD je 1 Mio. Ausgabe-Tokens
+      monthly_budget:
+        name: Monatliches Budget in USD
+      quota_group:
+        name: Gemeinsame Kontingentgruppe
+  rules:
+    name: Eigene Routingregeln
+    fields:
+      name:
+        name: Profilname
+      alias:
+        name: Modellalias
+      require_tools:
+        name: Nur für Anfragen mit Tools
+      provider_ids:
+        name: Erlaubte Profil-IDs, durch Komma getrennt
+  max_output_tokens:
+    name: Maximale Ausgabe-Tokens je Anfrage
+  request_timeout:
+    name: Zeitbudget je Anfrage (Sekunden)
+  attempt_timeout:
+    name: Zeitbudget je Anbieter (Sekunden)
+  max_attempts:
+    name: Maximale Anbieter-Versuche
+  cooldown_seconds:
+    name: Abkühlzeit nach Fehlern (Sekunden)
+  reserve_percent:
+    name: Sicherheitsreserve für Limits (%)
+  allow_paid:
+    name: Auch als kostenpflichtig markierte Profile zulassen
+  history_days:
+    name: Aufbewahrung der Historie (Tage)
+  gateway_url:
+    name: Alternative Router-URL für die Einrichtung
+network:
+  8000/tcp:
+    name: Router-Basis-URL

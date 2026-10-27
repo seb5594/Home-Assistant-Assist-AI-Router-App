@@ -1,0 +1,84 @@
+configuration:
+  language:
+    name: Language
+  routing:
+    name: Routing & rules
+  providers:
+    name: Provider profiles
+    fields:
+      id:
+        name: Unique profile ID
+      name:
+        name: Profile name
+      preset:
+        name: Provider template
+      model:
+        name: LiteLLM model
+      api_key:
+        name: API key or !secret reference
+      api_base:
+        name: Custom API base URL
+      api_version:
+        name: API version (e.g. Azure)
+      enabled:
+        name: Profile enabled
+      free_only:
+        name: I confirm free usage for this profile
+      local:
+        name: Local model
+      supports_tools:
+        name: Model supports tool calls (Assist)
+      supports_vision:
+        name: Model supports image input
+      rpm:
+        name: Requests per minute (RPM)
+      tpm:
+        name: Tokens per minute (TPM)
+      daily_tokens:
+        name: Tokens per day
+      daily_requests:
+        name: Requests per day
+      monthly_tokens:
+        name: Tokens per month
+      context_tokens:
+        name: Context window in tokens
+      input_price:
+        name: USD per 1M input tokens
+      output_price:
+        name: USD per 1M output tokens
+      monthly_budget:
+        name: Monthly budget in USD
+      quota_group:
+        name: Shared quota group
+  rules:
+    name: Custom routing rules
+    fields:
+      name:
+        name: Profile name
+      alias:
+        name: Model alias
+      require_tools:
+        name: Only requests containing tools
+      provider_ids:
+        name: Allowed profile IDs, comma separated
+  max_output_tokens:
+    name: Maximum output tokens per request
+  request_timeout:
+    name: Request time budget (seconds)
+  attempt_timeout:
+    name: Provider time budget (seconds)
+  max_attempts:
+    name: Maximum provider attempts
+  cooldown_seconds:
+    name: Cooldown after failures (seconds)
+  reserve_percent:
+    name: Quota safety reserve (%)
+  allow_paid:
+    name: Allow profiles marked as paid
+  history_days:
+    name: History retention (days)
+  gateway_url:
+    name: Alternative router URL for setup
+network:
+  8000/tcp:
+    name: Router base URL
