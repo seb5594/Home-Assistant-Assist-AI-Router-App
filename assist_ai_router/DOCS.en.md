@@ -1,0 +1,62 @@
+# Assist AI Router — English
+
+Experimental · **2026-10-27** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+
+## Quick start
+
+1. Install/start the app and open its ingress web interface. LiteLLM is included.
+2. Select a provider template, enter its key and model, save, and test the connection. Tests send a small real request.
+3. Add another independent provider and sort profiles with ↑/↓. Fixed priority tries them in that order.
+4. Open **Connect Assist → Show connection details → Add LiteLLM to Home Assistant**. Copy the URL and router key into the native integration form. The router key is separate from provider keys.
+5. Open the LiteLLM entry, choose **Add conversation agent**, select **assist-auto**, enable Assist tools if needed, expose the desired entities, and select the agent in your voice assistant.
+
+Home Assistant reaches the internal app hostname on port 8000; setup obtains that hostname from Supervisor. The API's `/v1/models` returns `assist-auto`, custom rule aliases and `provider:<profile-id>`. Explicit provider aliases target exactly one profile without fallback. Use `assist-auto` for normal Assist use.
+
+## Configuration and credentials
+
+Saving in ingress writes the same app options as the Home Assistant Configuration tab through `/addons/self/options`, then loads resolved options and applies them immediately. Configuration-tab changes load on app restart or when refreshing router settings. Revision conflicts stop stale UI edits from overwriting newer options; Supervisor has no atomic compare-and-swap across separate editors.
+
+Enter keys directly in the form or reference an existing Home Assistant secret using `!secret name`. Supervisor resolves references; edits preserve the raw reference. Resolved keys are never returned to the UI. Leave the key field blank while editing to preserve it; use **Remove saved key** to clear it. This app cannot create new entries in HA's secrets file. Direct form entry requires no text files.
+
+There are 21 templates: Google AI Studio, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, GitHub Models, SambaNova, Together AI, Fireworks AI, Cohere, Cloudflare, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Perplexity, Azure, Ollama and OpenAI-compatible endpoints. Model examples are editable. The model catalog comes from the pinned SDK and does not verify account availability. Some providers need a custom account/deployment URL or API version.
+
+Templates do not promise free access. Confirm free usage only for a model/account you have checked. Paid-marked profiles are blocked by default, but the app cannot verify your account tariff or prevent provider billing. Local models need a reachable endpoint. Text connection tests do not prove a model's tool-calling quality; enable tool support only for suitable models.
+
+## Policies and rules
+
+| Policy | Selection |
+| --- | --- |
+| Fixed priority | Your configured order |
+| Preserve quotas | Lowest consumed fraction of known limits; unknown quotas last |
+| Spread requests | Rotate the starting point on each request |
+| Local first | Local models, then allowed cloud profiles |
+
+The first matching custom rule restricts the provider set by requested model alias and optionally the presence of tools. The policy sorts within that set; fallbacks cannot leave it. Custom aliases appear in the integration's model picker. `*` matches routing aliases. Explicit `provider:` aliases bypass rule selection and use one profile, while still enforcing cost and capability restrictions.
+
+429, authentication failures, missing models, network errors and server errors can trigger fallback. Cooldowns honor `Retry-After`; shared quota groups share 429 cooldowns. Invalid requests are not blindly replayed. Context-window errors may try another model; messages and Assist tools are never truncated/dropped. Per-request and per-attempt timeouts are forwarded to LiteLLM, and maximum attempts limit the search; individual network phases can affect total elapsed time.
+
+## Usage and limits
+
+Configure RPM, TPM, daily requests, daily/monthly tokens, context windows and monthly budgets. **0 means unknown / no local enforcement**, not unlimited free allowance. A safety reserve reduces usable quota. SQLite reserves estimated input plus maximum output before each upstream call, under a lock, so concurrent requests cannot promise the same local quota twice.
+
+The conservative input estimate uses UTF-8 bytes including tool definitions plus a protocol allowance, not exact tokenization. This can exclude large Assist contexts from small quotas earlier than the provider would. Provider-reported token usage replaces reservations after successful responses. Missing usage remains marked **≈**. Failed/interrupted requests retain conservative reservations because a charge cannot be excluded. Request counters include failures.
+
+Matching provider prefix, base URL and key share counters automatically. Give profiles with a shared account/project quota the same explicit quota group and identical limits. Minute counters use rolling 60-second windows; daily/monthly boundaries are **UTC**. Provider-specific reset schedules are supplemented by 429 cooldowns. Activity outside this app is unknown.
+
+Dashboard values are local observations, not verified provider balances. Provider portals are linked. The usage page shows the latest 100 attempts, including input/output/total tokens, timing, request IDs and fallbacks. CSV adds estimated USD costs using manually entered prices. Retention is configurable; current-month rows remain until the next month to preserve quota accounting. Prompts, completions and executable tool arguments are never stored.
+
+## MCP, operation and updates
+
+Use the native LiteLLM integration for Assist. MCP is optional: the HA MCP client adds external tools; the HA MCP server exposes HA to external clients. Setup opens official forms. Entity access, OAuth and voice-pipeline changes remain in Home Assistant; the app does not edit HA files or `.storage`.
+
+Ingress administration listens on 8099 and accepts only Supervisor's ingress peer `172.30.32.2` in production. It is not published on the host. Port 8000 provides the authenticated chat API and no management routes. Host publication is optional and disabled by default. Use your own HTTPS reverse proxy for access over an untrusted network. Ingress administration is intended for trusted HA users.
+
+SQLite, options and the generated router key live in `/data`; include them in app backups. Backups may contain credentials. The image uses the exact official LiteLLM release tag with upstream's frozen dependencies; startup verifies the SDK version. The full upstream image is larger than an SDK-only install. Telemetry is disabled. No periodic paid health checks, Redis or PostgreSQL are required.
+
+The stable version check contacts GitHub only after a click, caches for one hour, and installs nothing. Updates ship in reviewed app releases. Calendar versions use `YYYY-MM-DD` for the first build and `.2`, `.3`, … for subsequent builds that day, using Europe/Berlin dates. No trailing dot. This first release line remains experimental.
+
+If all allowed providers are exhausted/unavailable and no local fallback is available, the API returns HTTP 503 with `no_provider_available`. Unlimited cloud answers cannot be guaranteed.
+
+Before a stable release, test installation on real HA OS amd64/aarch64, protection mode/ingress, secret persistence/restart, the native LiteLLM setup and Assist tool calls, real multi-provider 429/Retry-After behavior and backup restore. Software tests do not replace these acceptance checks. Record visual browser verification separately.
+
+References: [native LiteLLM integration](https://www.home-assistant.io/integrations/litellm/), [app options/secrets](https://contributors.home-assistant.io/apps/guides/options/), [Supervisor app API](https://contributors.home-assistant.io/apps/supervisor-api/apps/), [LiteLLM routing](https://docs.litellm.ai/docs/routing), [pinned release](https://github.com/BerriAI/litellm/releases/tag/v1.106.4).

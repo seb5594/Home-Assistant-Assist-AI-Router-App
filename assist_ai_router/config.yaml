@@ -1,0 +1,77 @@
+name: Assist AI Router
+version: '2026-10-27'
+slug: assist_ai_router
+description: Experimental multi-provider AI gateway for Home Assistant Assist, powered
+  by LiteLLM.
+url: https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App
+arch:
+- amd64
+- aarch64
+homeassistant: 2026.8.0
+stage: experimental
+startup: application
+boot: auto
+init: true
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:routes
+panel_title: Assist AI Router
+ports:
+  8000/tcp: null
+ports_description:
+  8000/tcp: Optional authenticated OpenAI-compatible API (internal access works without
+    publishing)
+options:
+  language: de
+  routing: priority
+  providers: []
+  rules: []
+  max_output_tokens: 512
+  request_timeout: 45
+  attempt_timeout: 12
+  max_attempts: 4
+  cooldown_seconds: 60
+  reserve_percent: 5
+  allow_paid: false
+  history_days: 30
+  gateway_url: ''
+schema:
+  language: list(de|en)
+  routing: list(priority|quota|round_robin|local_first)
+  providers:
+  - id: str
+    name: str
+    preset: str
+    model: str
+    api_key: password?
+    api_base: str?
+    api_version: str?
+    enabled: bool?
+    free_only: bool?
+    local: bool?
+    supports_tools: bool?
+    supports_vision: bool?
+    rpm: int(0,)?
+    tpm: int(0,)?
+    daily_tokens: int(0,)?
+    daily_requests: int(0,)?
+    monthly_tokens: int(0,)?
+    context_tokens: int(0,)?
+    input_price: float(0,)?
+    output_price: float(0,)?
+    monthly_budget: float(0,)?
+    quota_group: str?
+  rules:
+  - name: str
+    alias: str
+    require_tools: bool
+    provider_ids: str
+  max_output_tokens: int(0,)
+  request_timeout: int(0,)
+  attempt_timeout: int(0,)
+  max_attempts: int(0,)
+  cooldown_seconds: int(0,)
+  reserve_percent: int(0,)
+  allow_paid: bool
+  history_days: int(0,)
+  gateway_url: str

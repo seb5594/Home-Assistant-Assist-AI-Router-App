@@ -1,4 +1,7 @@
 .engine/
+.venv/
+.local/
+*.sqlite*
 __pycache__/
 *.py[cod]
 **/data/options.json
