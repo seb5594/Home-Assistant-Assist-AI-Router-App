@@ -1,6 +1,6 @@
 # Assist AI Router — English
 
-Experimental · **2026-10-27** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Experimental · **2026-10-29** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
 
 ## Quick start
 
@@ -14,9 +14,19 @@ Home Assistant reaches the internal app hostname on port 8000; setup obtains tha
 
 ## Configuration and credentials
 
+Use **Pause/Resume** directly on provider cards in Overview or Providers. Paused profiles remain excluded until manually resumed, including after app restarts. Credentials, priority, rules and usage are preserved. New requests skip them; already running calls may still finish. Resuming does not reset limits or cooldowns.
+
 Saving in ingress writes the same app options as the Home Assistant Configuration tab through `/addons/self/options`, then loads resolved options and applies them immediately. Configuration-tab changes load on app restart or when refreshing router settings. Revision conflicts stop stale UI edits from overwriting newer options; Supervisor has no atomic compare-and-swap across separate editors.
 
 Enter keys directly in the form or reference an existing Home Assistant secret using `!secret name`. Supervisor resolves references; edits preserve the raw reference. Resolved keys are never returned to the UI. Leave the key field blank while editing to preserve it; use **Remove saved key** to clear it. This app cannot create new entries in HA's secrets file. Direct form entry requires no text files.
+
+### Load models directly from a provider
+
+Enter the API key and custom API base URL if needed, then choose **Load models directly from provider**. Select a returned model; the LiteLLM prefix is added automatically, so no model name is required beforehand. A new literal key works before saving without persisting the profile/key. Saved keys and secret references are resolved on the server. A **new** `!secret` reference needs to be saved in a profile first, using an SDK suggestion as the initial model if needed. Changing the provider or API destination requires re-entering a saved key or explicitly saving the changed profile.
+
+Direct adapters cover Gemini, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, SambaNova, Together AI, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Cohere, Ollama and custom OpenAI-compatible model endpoints. Other providers or account-specific deployment APIs can use SDK suggestions/manual entry. Provider responses do not guarantee free pricing, individual account permission or tool support. Some APIs list non-chat models; Gemini/Cohere use known chat filters. Pagination, response sizes and processing time are bounded, and partial lists are labeled.
+
+Discovery runs only after a click and loads metadata without generating a prompt or changing token counters. Provider metadata rate limits may still apply. Credentials are sent in headers to the configured provider, never in URLs, UI responses or logs; redirects are blocked and provider error bodies are not echoed.
 
 There are 21 templates: Google AI Studio, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, GitHub Models, SambaNova, Together AI, Fireworks AI, Cohere, Cloudflare, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Perplexity, Azure, Ollama and OpenAI-compatible endpoints. Model examples are editable. The model catalog comes from the pinned SDK and does not verify account availability. Some providers need a custom account/deployment URL or API version.
 
@@ -46,6 +56,8 @@ Matching provider prefix, base URL and key share counters automatically. Give pr
 Dashboard values are local observations, not verified provider balances. Provider portals are linked. The usage page shows the latest 100 attempts, including input/output/total tokens, timing, request IDs and fallbacks. CSV adds estimated USD costs using manually entered prices. Retention is configurable; current-month rows remain until the next month to preserve quota accounting. Prompts, completions and executable tool arguments are never stored.
 
 ## MCP, operation and updates
+
+The HACS **MCP Assist by mike-nott** integration has its own selectable path under **Connect Assist**. It opens the HACS repository and integration form and supplies the correct server root URL **without `/v1`**, the router key, `assist-auto` and a timeout suggestion. Select the **OpenAI** compatible server type in MCP Assist and replace its default cloud URL with the router URL. The [MCP Assist guide](MCP_ASSIST.en.md) covers installation, entity permissions, free-quota settings and troubleshooting. MCP Assist can replace the native LiteLLM conversation agent.
 
 Use the native LiteLLM integration for Assist. MCP is optional: the HA MCP client adds external tools; the HA MCP server exposes HA to external clients. Setup opens official forms. Entity access, OAuth and voice-pipeline changes remain in Home Assistant; the app does not edit HA files or `.storage`.
 

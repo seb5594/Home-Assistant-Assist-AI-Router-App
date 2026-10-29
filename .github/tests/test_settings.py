@@ -54,6 +54,18 @@ class Configuration(unittest.TestCase):
         self.assertEqual(self.supervisor.saved["providers"][0]["api_key"], "!secret groq_key")
         self.assertEqual(self.settings.snapshot()["providers"][0]["api_key"], "RESOLVED-PRIVATE-KEY")
 
+    def test_pausing_preserves_supervisor_secret_reference_and_rules(self):
+        self.supervisor.raw["rules"] = [dict(name="Selected", alias="assist-selected", require_tools=False, provider_ids="a")]
+        self.settings.reload()
+        for enabled in (False, True):
+            cfg = self.editable()
+            cfg["providers"][0]["enabled"] = enabled
+            self.settings.save(cfg, self.settings.revision())
+            self.settings.reload()
+            self.assertEqual(self.supervisor.saved["providers"][0]["api_key"], "!secret groq_key")
+            self.assertEqual(self.settings.snapshot()["providers"][0]["enabled"], enabled)
+            self.assertEqual(self.settings.snapshot()["rules"], cfg["rules"])
+
     def test_literal_key_is_masked_and_blank_omission_preserves_it(self):
         self.supervisor.raw["providers"][0]["api_key"] = "LITERAL-PRIVATE"
         self.settings.reload()

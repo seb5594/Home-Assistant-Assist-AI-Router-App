@@ -9,7 +9,7 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from .catalog import DEFAULTS, PROVIDER_DEFAULTS
+from .catalog import DEFAULTS, PROVIDER_DEFAULTS, catalog
 
 
 class ConfigError(Exception):
@@ -150,6 +150,40 @@ class Settings:
     def snapshot(self):
         with self.lock:
             return copy.deepcopy(self.resolved)
+
+    def discovery_profile(self, draft):
+        """Use draft credentials before saving; keep saved secrets bound to their destination."""
+        if not isinstance(draft, dict) or set(draft) - {"id", "preset", "api_base", "api_key"}:
+            raise ConfigError("invalid_provider")
+        pid = draft.get("id", "")
+        if not isinstance(pid, str) or (pid and not re.fullmatch(r"[a-zA-Z0-9_-]{1,64}", pid)):
+            raise ConfigError("invalid_provider_id")
+        with self.lock:
+            self.reload()
+            previous = next((p for p in self.raw["providers"] if p["id"] == pid), None)
+            preset = draft.get("preset", previous["preset"] if previous else "openai_compatible")
+            template = next((p for p in catalog() if p["id"] == preset), None)
+            if template is None:
+                raise ConfigError("invalid_provider")
+            base = draft.get("api_base", previous["api_base"] if previous else "")
+            key = draft.get("api_key")
+            if not isinstance(base, str) or len(base) > 512 or (key is not None and (not isinstance(key, str) or len(key) > 8192)):
+                raise ConfigError("invalid_provider")
+            validate_url(base)
+            if key is None or key.startswith("!secret "):
+                if not previous:
+                    if key:
+                        raise ConfigError("model_discovery_save_secret")
+                    key = ""
+                else:
+                    if preset != previous["preset"] or base.rstrip("/") != previous["api_base"].rstrip("/"):
+                        raise ConfigError("model_discovery_reenter_key")
+                    if key is not None and key != previous["api_key"]:
+                        raise ConfigError("model_discovery_save_secret")
+                    key = next(p["api_key"] for p in self.resolved["providers"] if p["id"] == pid)
+            if key.startswith(("os.environ/", "os.getenv/")) or "\r" in key or "\n" in key:
+                raise ConfigError("invalid_api_key")
+            return dict(preset=preset, prefix=template["prefix"], api_key=key, api_base=base)
 
     def save(self, incoming, revision):
         with self.lock:

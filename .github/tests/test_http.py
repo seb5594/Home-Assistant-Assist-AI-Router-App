@@ -5,6 +5,7 @@ import unittest
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from unittest.mock import patch
 
 from test_router import DEFAULTS, profile, response
 from app.router import completion
@@ -69,6 +70,95 @@ class HTTP(unittest.TestCase):
         self.assertNotIn("key-a", data.decode())
         self.assertEqual(headers["Cache-Control"], "no-store")
         self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
+
+    def test_live_model_discovery_is_ingress_only_and_does_not_save_credentials(self):
+        draft = dict(preset="groq", api_key="draft-private-key", api_base="")
+        captured = []
+        def discover(profile):
+            captured.append(profile)
+            return dict(models=["groq/new-model"], source="provider", complete=True)
+        with patch("app.server.discover", discover):
+            code, raw, _ = self.request(self.admin, "/api/provider-models", draft)
+            self.assertEqual(code, 200)
+            self.assertEqual(json.loads(raw)["models"], ["groq/new-model"])
+            self.assertNotIn("draft-private-key", raw.decode())
+            self.assertEqual(captured[0]["api_key"], "draft-private-key")
+            self.assertEqual(self.state.settings.snapshot()["providers"][0]["api_key"], "key-a")
+            self.assertEqual(self.request(self.admin, "/api/provider-models", draft, custom=False)[0], 403)
+            self.assertEqual(self.request(self.api, "/api/provider-models", draft, auth=True)[0], 404)
+            self.assertEqual(len(captured), 1)
+
+    def test_pause_and_resume_are_durable_and_keep_credentials_and_usage(self):
+        self.state.router.run(dict(model="assist-auto", messages=[dict(role="user", content="Hi")]))
+        original_usage = self.state.ledger.recent()
+        for enabled in (False, True):
+            view = json.loads(self.request(self.admin, "/api/settings")[1])
+            p = view["options"]["providers"][0]
+            p.pop("api_key_set")
+            p.pop("api_key_reference")
+            p["enabled"] = enabled
+            code, _, _ = self.request(self.admin, "/api/settings", {"options": view["options"], "revision": view["revision"]}, method="PUT")
+            self.assertEqual(code, 200)
+            self.state.settings.reload()
+            self.assertEqual(self.state.settings.snapshot()["providers"][0]["enabled"], enabled)
+            self.assertEqual(self.state.settings.snapshot()["providers"][0]["api_key"], "key-a")
+            self.assertEqual(self.state.ledger.recent(), original_usage)
+            models = json.loads(self.request(self.api, "/v1/models", auth=True)[1])["data"]
+            self.assertEqual("provider:a" in [m["id"] for m in models], enabled)
+        self.assertEqual(self.state.settings.snapshot()["providers"][0]["id"], "a")
+
+    def test_mcp_assist_connection_uses_authenticated_openai_root_url(self):
+        from urllib.parse import urlsplit, parse_qs
+        code, raw, _ = self.request(self.admin, "/api/connection", {"integration": "mcp_assist"})
+        self.assertEqual(code, 200)
+        data = json.loads(raw)
+        self.assertEqual(data["base_url"], "http://localhost:8000")
+        self.assertEqual(data["server_type"], "OpenAI")
+        self.assertEqual(data["api_key"], self.state.token)
+        self.assertEqual(data["request_timeout"], 50)
+        self.assertEqual(data["model"], "assist-auto")
+        self.assertEqual(parse_qs(urlsplit(data["assist_url"]).query), {"domain": ["mcp_assist"]})
+        self.assertEqual(parse_qs(urlsplit(data["hacs_url"]).query), {"owner": ["mike-nott"], "repository": ["mcp-assist"], "category": ["integration"]})
+        for key in ("assist_url", "hacs_url", "docs_url"):
+            self.assertNotIn(self.state.token, data[key])
+        for base in ("https://router.example/prefix/v1/", "https://router.example/prefix/v1", "https://router.example/prefix"):
+            cfg = self.state.settings.snapshot()
+            cfg["gateway_url"] = base
+            self.state.settings.save(cfg, self.state.settings.revision())
+            self.assertEqual(self.state.connection("mcp_assist")["base_url"], "https://router.example/prefix")
+            self.assertEqual(self.state.connection()["base_url"], base)
+        self.assertEqual(self.request(self.admin, "/api/connection", {"integration": "unknown"})[0], 400)
+        self.assertEqual(self.request(self.admin, "/api/connection", {"integration": "mcp_assist"}, custom=False)[0], 403)
+
+    def test_mcp_assist_style_discovery_and_streamed_tool_results(self):
+        # Contract from MCP Assist 0.17.2: OpenAI adapter adds /v1 and Bearer auth,
+        # then posts model/messages/temperature/max_tokens/tools/tool_choice/stream.
+        data = self.state.connection("mcp_assist")
+        headers = {"Authorization": "Bearer " + data["api_key"], "Content-Type": "application/json"}
+        base = f"http://127.0.0.1:{self.api.server_port}"
+        with urllib.request.urlopen(urllib.request.Request(base + "/v1/models", headers=headers)) as models:
+            self.assertIn(data["model"], [m["id"] for m in json.load(models)["data"]])
+        calls = []
+        tool = dict(id="discover-1", type="function", function=dict(name="discover_entities", arguments='{"domain":"light"}'))
+        def answer(p, payload, timeout):
+            calls.append(payload)
+            result = response()
+            if len(calls) == 1:
+                result["choices"][0]["message"] = dict(role="assistant", content=None, tool_calls=[tool])
+                result["choices"][0]["finish_reason"] = "tool_calls"
+            return result
+        self.state.router.call = answer
+        body = dict(model=data["model"], messages=[dict(role="user", content="Which lights are on?")],
+                    temperature=0.5, max_tokens=256, stream=True, tool_choice="auto",
+                    tools=[dict(type="function", function=dict(name="discover_entities", parameters=dict(type="object", properties={"domain": {"type": "string"}})))])
+        req = urllib.request.Request(base + "/v1/chat/completions", data=json.dumps(body).encode(), headers=headers)
+        with urllib.request.urlopen(req) as stream:
+            chunks = [json.loads(line[6:]) for line in stream.read().decode().splitlines() if line.startswith("data:") and "[DONE]" not in line]
+        self.assertEqual(chunks[0]["choices"][0]["delta"]["tool_calls"][0]["id"], "discover-1")
+        body["messages"].extend([dict(role="assistant", content=None, tool_calls=[tool]), dict(role="tool", tool_call_id="discover-1", content='{"entities": []}')])
+        self.assertEqual(self.request(self.api, "/v1/chat/completions", body, auth=True)[0], 200)
+        self.assertEqual(calls[1]["messages"][-1]["tool_call_id"], "discover-1")
+        self.assertEqual(calls[1]["tools"], body["tools"])
 
     def test_native_integration_chat_and_tool_roundtrip(self):
         body = dict(model="assist-auto", messages=[dict(role="user", content="Lights on")],

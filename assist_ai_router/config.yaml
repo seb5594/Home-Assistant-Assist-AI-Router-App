@@ -1,5 +1,5 @@
 name: Assist AI Router
-version: '2026-10-27'
+version: '2026-10-29'
 slug: assist_ai_router
 description: Experimental multi-provider AI gateway for Home Assistant Assist, powered
   by LiteLLM.
