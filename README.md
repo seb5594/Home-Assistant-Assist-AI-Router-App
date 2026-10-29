@@ -28,13 +28,16 @@
 
 Die experimentelle Home-Assistant-App bündelt LiteLLM-kompatible Anbieter hinter einem lokalen Endpunkt. Profile, Schlüssel, Modelle, Prioritäten und Limits verwaltest du in der Ingress-Weboberfläche. Die native **LiteLLM-Integration** verbindet den Router mit Assist.
 
-Version **2026-10-27** · LiteLLM **1.106.4** · amd64 / aarch64 · Home Assistant **2026.8+**
+Version **2026-10-29** · LiteLLM **1.106.4** · amd64 / aarch64 · Home Assistant **2026.8+**
 
 * **21 Anbietervorlagen** einschließlich Groq, Gemini, Cerebras, OpenRouter, Mistral und lokaler Modelle.
 * **Automatisches Ausweichen** bei Rate-Limits und Ausfällen, persistente Abkühlzeiten und gemeinsame Kontingentgruppen.
 * **Vier Routing-Presets** und eigene Regeln mit Modellalias und Tool-Bedingung.
 * **Verbrauch pro API-Anfrage** mit Eingabe-/Ausgabetokens, Dauer, Fallback-Historie und CSV-Export.
 * **Ohne Textdateien**: Webänderungen landen in der App-Konfiguration; vorhandene `!secret`-Verweise bleiben erhalten.
+* **Pausieren/Fortsetzen** direkt auf Anbieterkarten, ohne Schlüssel, Priorität oder Verbrauch zu verlieren.
+* **MCP Assist aus HACS** mit eigenem Einrichtungsweg, passenden Kopierdaten und deutscher/englischer Anleitung.
+* **Modelllisten direkt vom Anbieter** mit eingegebenen API-Keys oder gespeicherten Secrets; SDK-Vorschläge bleiben als Alternative verfügbar.
 * **Geführte Assist-Einrichtung** über die native LiteLLM-Integration und optionale MCP-Einrichtung.
 * **Deutsch und Englisch**, stabile Versionsprüfung und per Tag plus Digest gepinnte LiteLLM-Komponente.
 
@@ -55,6 +58,8 @@ Die Oberfläche zeigt den lokal erfassten Verbrauch dieser App gegen deine einge
 Sind alle erlaubten Anbieter erschöpft und kein lokales Modell verfügbar, kann eine Anfrage weiterhin scheitern. Ein zusätzliches lokales, Tool-fähiges Modell verbessert die Verfügbarkeit. Prompts und Antworten werden nicht gespeichert.
 
 ## Dokumentation
+
+[MCP Assist aus HACS verbinden](assist_ai_router/MCP_ASSIST.md) · [MCP Assist English guide](assist_ai_router/MCP_ASSIST.en.md)
 
 [Deutsche Anleitung](assist_ai_router/DOCS.md) · [English guide](assist_ai_router/DOCS.en.md) · [English overview](README.en.md) · [Entwicklung und Abnahme](CONTRIBUTING.md) · [Änderungen](assist_ai_router/CHANGELOG.md)
 

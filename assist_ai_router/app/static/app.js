@@ -1,6 +1,6 @@
 'use strict';
 const $ = (q, root = document) => root.querySelector(q);
-const state = {cfg: null, revision: '', status: null, catalog: [], models: {}, words: {}, lang: 'de', page: 'overview', saving: false};
+const state = {cfg: null, revision: '', status: null, catalog: [], models: {}, words: {}, lang: 'de', page: 'overview', setupIntegration: 'litellm', saving: false};
 const pages = {overview: '◈', providers: '▦', routing: '⇄', activity: '≋', setup: '↗', settings: '⚙'};
 const t = (key) => state.words[state.lang]?.[key] ?? state.words.en?.[key] ?? key;
 const fmt = (n) => new Intl.NumberFormat(state.lang).format(n || 0);
@@ -64,7 +64,18 @@ function providerCard(p, index, compact = false) {
   card.append(quota);
   if (status?.health.until > Date.now() / 1000) card.append(el('p', `${t('retry_at')} ${new Date(status.health.until * 1000).toLocaleTimeString(state.lang)}`, 'muted'));
   const actions = el('div', undefined, 'actions');
-  actions.append(button(t('edit'), () => openEditor(p)), button(t('test'), async () => { notice(t('testing')); const data = await api('test', 'POST', {provider_id: p.id}); state.status = await api('status'); render(); notice(`${t('test_success')} · ${fmt(data.usage?.total_tokens)} tokens`); }));
+  const toggle = button(t(p.enabled ? 'pause_provider' : 'resume_provider'), async () => {
+    const c = cloneCfg(); const profile = c.providers.find(item => item.id === p.id);
+    profile.enabled = !p.enabled;
+    await save(c);
+    notice(t(profile.enabled ? 'provider_resumed' : 'provider_paused'));
+  });
+  toggle.title = t('pause_provider_hint');
+  toggle.setAttribute('aria-pressed', String(!p.enabled));
+  const test = button(t('test'), async () => { notice(t('testing')); const data = await api('test', 'POST', {provider_id: p.id}); state.status = await api('status'); render(); notice(`${t('test_success')} · ${fmt(data.usage?.total_tokens)} tokens`); });
+  test.disabled = !p.enabled;
+  if (!p.enabled) test.title = t('resume_before_test');
+  actions.append(toggle, button(t('edit'), () => openEditor(p)), test);
   if (!compact) {
     actions.append(button('↑', async () => { if (!index) return; const c = cloneCfg(); [c.providers[index - 1], c.providers[index]] = [c.providers[index], c.providers[index - 1]]; await save(c); }), button('↓', async () => { if (index === state.cfg.providers.length - 1) return; const c = cloneCfg(); [c.providers[index + 1], c.providers[index]] = [c.providers[index], c.providers[index + 1]]; await save(c); }));
     const remove = button(t('remove'), async () => {
@@ -106,10 +117,38 @@ function openEditor(existing, preset) {
   const grid = el('div', undefined, 'form-grid'); const presetField = selectField('preset', p.preset, state.catalog.map(c => [c.id, c.name])); presetField.input.disabled = Boolean(existing); grid.append(presetField.wrap);
   grid.append(field('name', p.name).wrap); const model = field('model', p.model, 'text', t('model_hint')); model.input.required = true; model.input.setAttribute('list', 'model-list'); grid.append(model.wrap);
   const models = el('datalist'); models.id = 'model-list'; grid.append(models);
-  const loadModels = button(t('load_models'), async () => { state.models = await api('models'); const prefix = model.input.value.split('/')[0]; models.replaceChildren(...(state.models[prefix] || []).map(m => { const o = el('option'); o.value = m.startsWith(prefix + '/') ? m : prefix + '/' + m; return o; })); notice(t('models_loaded')); }); grid.append(loadModels);
+  const modelTools = el('div', undefined, 'actions');
+  const liveChoices = el('div', undefined, 'full');
+  const liveStatus = el('small');
+  const loadModels = button(t('load_sdk_models'), async () => { state.models = await api('models'); const prefix = model.input.value.split('/')[0]; models.replaceChildren(...(state.models[prefix] || []).map(m => { const o = el('option'); o.value = m.startsWith(prefix + '/') ? m : prefix + '/' + m; return o; })); liveChoices.replaceChildren(); liveStatus.textContent = t('models_loaded'); });
+  const draftCredentials = () => {
+    const draft = {id: p.id, preset: p.preset, api_base: apiBase.input.value.trim()};
+    if (clear.input.checked) draft.api_key = '';
+    else if (key.input.value.trim()) draft.api_key = key.input.value.trim();
+    return draft;
+  };
+  const liveModels = button(t('load_provider_models'), async () => {
+    const draft = draftCredentials();
+    liveModels.disabled = true; liveStatus.textContent = t('provider_models_loading');
+    try {
+      const data = await api('provider-models', 'POST', draft);
+      if (!liveChoices.isConnected) return;
+      if (JSON.stringify(draftCredentials()) !== JSON.stringify(draft)) throw new Error('model_discovery_changed');
+      models.replaceChildren(...data.models.map(value => { const option = el('option'); option.value = value; return option; }));
+      const picker = selectField('discovered_model', data.models.includes(model.input.value) ? model.input.value : '', [['', t('choose_provider_model')], ...data.models.map(value => [value, value])]);
+      picker.input.name = '';
+      picker.input.addEventListener('change', () => { if (picker.input.value) model.input.value = picker.input.value; });
+      liveChoices.replaceChildren(picker.wrap);
+      liveStatus.textContent = `${fmt(data.models.length)} ${t(data.complete ? 'provider_models_loaded' : 'provider_models_partial')}`;
+    } catch (error) {
+      liveChoices.replaceChildren(); liveStatus.textContent = t(error.message);
+    } finally { liveModels.disabled = false; }
+  });
+  modelTools.append(liveModels, loadModels); grid.append(modelTools);
   const key = field('api_key', '', 'password', p.api_key_reference ? `${t('secret_kept')} ${p.api_key_reference}` : t('key_hint')); key.input.autocomplete = 'new-password'; key.input.placeholder = p.api_key_set ? t('keep_key') : '!secret my_ai_key'; grid.append(key.wrap);
   const clear = field('clear_key', false, 'checkbox'); if (existing) grid.append(clear.wrap);
-  grid.append(field('api_base', p.api_base || '', 'text', t('base_hint')).wrap);
+  const apiBase = field('api_base', p.api_base || '', 'text', t('base_hint'));
+  grid.append(apiBase.wrap, liveChoices, liveStatus);
   for (const k of ['enabled', 'free_only', 'local', 'supports_tools', 'supports_vision']) grid.append(field(k, p[k], 'checkbox').wrap);
   fields.append(grid);
   const advanced = el('details'); advanced.append(el('summary', t('advanced_limits'))); const limits = el('div', undefined, 'form-grid');
@@ -160,9 +199,31 @@ function connectionRow(label, value, secret = false) {
   row.append(input, button(t('copy'), async () => { if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(value); else { input.type = 'text'; input.focus(); input.select(); if (!document.execCommand('copy')) throw new Error('copy_manually'); if (secret) input.type = 'password'; } notice(t('copied')); })); if (secret) row.append(button(t('show_hide'), () => { input.type = input.type === 'password' ? 'text' : 'password'; })); wrapper.append(row); return wrapper;
 }
 function renderSetup(root) {
-  root.append(el('p', t('setup_intro'), 'muted')); const steps = el('section', undefined, 'panel steps');
+  root.append(el('p', t('setup_intro'), 'muted'));
+  const integration = selectField('setup_integration', state.setupIntegration, [['litellm', t('integration_native')], ['mcp_assist', t('integration_mcp_assist')]]);
+  integration.input.addEventListener('change', () => { state.setupIntegration = integration.input.value; render(); });
+  root.append(integration.wrap);
+  const steps = el('section', undefined, 'panel steps');
   function step(title, description) { const row = el('div', undefined, 'step'); const box = el('div'); box.append(el('h2', title), el('p', description)); row.append(box); steps.append(row); return box; }
   const first = step(t('setup_1'), t('setup_1_text')); first.append(button(t('manage_providers'), () => { location.hash = 'providers'; }));
+  if (state.setupIntegration === 'mcp_assist') {
+    const install = step(t('mcp_assist_install'), t('mcp_assist_install_text'));
+    const installLinks = el('div', undefined, 'actions');
+    installLinks.append(link(t('open_hacs_repository') + ' ↗', 'https://my.home-assistant.io/redirect/hacs_repository/?owner=mike-nott&repository=mcp-assist&category=integration'), link(t('mcp_assist_project') + ' ↗', 'https://github.com/mike-nott/mcp-assist'));
+    install.append(installLinks);
+    const connect = step(t('mcp_assist_connect'), t('mcp_assist_connect_text'));
+    const connection = el('div');
+    connect.append(button(t('reveal_connection'), async () => {
+      const data = await api('connection', 'POST', {integration: 'mcp_assist'});
+      connection.replaceChildren(connectionRow(t('mcp_assist_server_type'), data.server_type), connectionRow(t('mcp_assist_base_url'), data.base_url), connectionRow(t('router_key'), data.api_key, true), connectionRow(t('model'), data.model), connectionRow(t('mcp_assist_timeout'), String(data.request_timeout)));
+      connection.append(note(t('mcp_assist_url_hint')));
+      const actions = el('div', undefined, 'actions'); actions.append(link(t('open_mcp_assist') + ' ↗', data.assist_url), link(t('mcp_assist_project') + ' ↗', data.docs_url)); connection.append(actions);
+    }), connection);
+    const finish = step(t('mcp_assist_finish'), t('mcp_assist_finish_text'));
+    finish.append(link(t('open_assist') + ' ↗', 'https://my.home-assistant.io/redirect/voice_assistants/'));
+    root.append(steps, note(t('mcp_assist_boundary')));
+    return;
+  }
   const second = step(t('setup_2'), t('setup_2_text')); const connection = el('div'); second.append(button(t('reveal_connection'), async () => { const data = await api('connection', 'POST', {}); connection.replaceChildren(connectionRow(t('base_url'), data.base_url), connectionRow(t('router_key'), data.api_key, true), connectionRow(t('model'), data.model)); const actions = el('div', undefined, 'actions'); actions.append(link(t('open_litellm') + ' ↗', data.assist_url), link(t('official_docs') + ' ↗', data.docs_url)); connection.append(actions); }), connection);
   const third = step(t('setup_3'), t('setup_3_text')); third.append(link(t('open_assist') + ' ↗', 'https://my.home-assistant.io/redirect/voice_assistants/'));
   const fourth = step(t('setup_4'), t('setup_4_text')); const actions = el('div', undefined, 'actions'); actions.append(link(t('mcp_server') + ' ↗', 'https://my.home-assistant.io/redirect/config_flow_start/?domain=mcp_server'), link(t('mcp_client') + ' ↗', 'https://my.home-assistant.io/redirect/config_flow_start/?domain=mcp')); fourth.append(actions); root.append(steps, note(t('setup_boundary')));

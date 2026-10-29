@@ -57,6 +57,22 @@ class Routing(unittest.TestCase):
         self.assertEqual(self.ledger.recent()[0]["tokens"], 10)
         self.assertEqual(self.ledger.recent()[0]["estimated"], 0)
 
+    def test_paused_profiles_are_skipped_by_policies_rules_and_explicit_models(self):
+        rules = [dict(name="Selected", alias="assist-selected", require_tools=False, provider_ids="a,b")]
+        for policy in ("priority", "quota", "round_robin", "local_first"):
+            self.configure([profile("a", enabled=False, local=True), profile("b")], routing=policy, rules=rules)
+            called = []
+            def call(p, *_):
+                called.append(p["id"])
+                return response()
+            router = Router(self.settings, self.ledger, call)
+            for alias in ("assist-auto", "assist-selected"):
+                router.run(dict(model=alias, messages=[dict(role="user", content="Hi")]))
+            self.assertEqual(called, ["b", "b"])
+            self.assertNotIn("provider:a", router.models())
+            with self.assertRaises(GatewayError):
+                router.run(dict(model="provider:a", messages=[dict(role="user", content="Hi")]))
+
     def test_rate_limit_falls_back_and_honors_retry_after(self):
         called = []
         def call(p, *_):

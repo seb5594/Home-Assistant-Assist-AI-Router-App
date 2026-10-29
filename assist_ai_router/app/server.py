@@ -19,6 +19,7 @@ from .catalog import VERSION, LITELLM_VERSION, catalog
 from .ledger import Ledger
 from .router import GatewayError, Router, sdk
 from .settings import ConfigError, Settings, Supervisor
+from .discovery import discover
 
 STATIC = Path(__file__).parent / "static"
 
@@ -71,15 +72,25 @@ class State:
                     providers=providers, recent=self.ledger.recent(), models=self.router.models(),
                     synchronized=bool(self.settings.supervisor), quota_source="local_estimates_utc")
 
-    def connection(self):
+    def connection(self, integration="litellm"):
+        if integration not in ("litellm", "mcp_assist"):
+            raise GatewayError("invalid_integration", 400)
         cfg = self.settings.snapshot()
-        return dict(base_url=cfg["gateway_url"] or f"http://{self.settings.hostname}:8000/v1",
+        base_url = cfg["gateway_url"] or f"http://{self.settings.hostname}:8000/v1"
+        if integration == "mcp_assist":
+            # MCP Assist's OpenAI adapter appends /v1/models and /v1/chat/completions itself.
+            base_url = base_url.rstrip("/").removesuffix("/v1")
+        result = dict(base_url=base_url, integration=integration,
                     model="assist-auto", api_key=self.token, streaming="buffered",
-                    assist_url="https://my.home-assistant.io/redirect/config_flow_start/?domain=litellm",
+                    assist_url="https://my.home-assistant.io/redirect/config_flow_start/?domain=" + integration,
                     mcp_server_url="https://my.home-assistant.io/redirect/config_flow_start/?domain=mcp_server",
                     mcp_client_url="https://my.home-assistant.io/redirect/config_flow_start/?domain=mcp",
                     pipeline_url="https://my.home-assistant.io/redirect/voice_assistants/",
-                    docs_url="https://www.home-assistant.io/integrations/litellm/")
+                    docs_url="https://github.com/mike-nott/mcp-assist" if integration == "mcp_assist" else "https://www.home-assistant.io/integrations/litellm/")
+        if integration == "mcp_assist":
+            result.update(server_type="OpenAI", request_timeout=cfg["request_timeout"] + 5,
+                          hacs_url="https://my.home-assistant.io/redirect/hacs_repository/?owner=mike-nott&repository=mcp-assist&category=integration")
+        return result
 
     def versions(self):
         with self.version_lock:
@@ -246,7 +257,9 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(body, dict):
                 raise GatewayError("invalid_request", 400)
             if path == "/api/connection":
-                return self.reply(200, state.connection())
+                return self.reply(200, state.connection(body.get("integration", "litellm")))
+            if path == "/api/provider-models":
+                return self.reply(200, discover(state.settings.discovery_profile(body)))
             if path == "/api/versions":
                 return self.reply(200, state.versions())
             if path == "/api/test":
