@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-29.2
+
+* Link the updated developer credit to the project repository.
+* Add a More Home Assistant Apps button beside Support my work ☕ in the ingress footer.
+
 ## 2026-10-29
 
 * Pause and resume provider profiles directly from overview and provider cards, preserving credentials, priority, rules and usage. Paused profiles stay paused across restarts until resumed; already running requests finish normally.
