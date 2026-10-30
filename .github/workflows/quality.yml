@@ -21,3 +21,4 @@ jobs:
       - run: python -m pip install -r .github/dev/requirements-dev.txt
       - run: python -m unittest discover -s .github/tests -p 'test_*.py' -v
       - run: node --check assist_ai_router/app/static/app.js
+      - run: node --test .github/tests/ui.test.cjs

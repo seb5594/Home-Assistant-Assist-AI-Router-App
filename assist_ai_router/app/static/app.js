@@ -1,11 +1,15 @@
 'use strict';
 const $ = (q, root = document) => root.querySelector(q);
-const state = {cfg: null, revision: '', status: null, catalog: [], models: {}, words: {}, lang: 'de', page: 'overview', setupIntegration: 'litellm', saving: false};
-const pages = {overview: '◈', providers: '▦', routing: '⇄', activity: '≋', setup: '↗', settings: '⚙'};
+const state = {cfg: null, revision: '', status: null, catalog: [], models: {}, words: {}, lang: 'de', page: 'overview', setupIntegration: 'litellm', saving: false, draggedProviderId: null};
+const pages = {overview: '🏠', providers: '🧩', routing: '🔀', activity: '📊', setup: '🔗', settings: '⚙️'};
 const t = (key) => state.words[state.lang]?.[key] ?? state.words.en?.[key] ?? key;
 const fmt = (n) => new Intl.NumberFormat(state.lang).format(n || 0);
 function el(tag, text, cls) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; }
 function button(text, action, cls) { const e = el('button', text, cls); e.type = 'button'; e.addEventListener('click', () => guard(action)); return e; }
+function withIcon(element, symbol) { const icon = el('span', symbol, 'ui-icon'); icon.ariaHidden = 'true'; element.prepend(icon, document.createTextNode(' ')); return element; }
+const actionIcons = {add_provider: '➕', edit: '✏️', test: '🧪', pause_provider: '⏸️', resume_provider: '▶️', remove: '🗑️', start_setup: '🔗', add_rule: '➕', check_versions: '🔎', reveal_connection: '🔑'};
+function actionButton(key, action, cls) { return withIcon(button(t(key), action, cls), actionIcons[key] || '⚙️'); }
+function providerIcon(preset) { return ({gemini: '✨', groq: '⚡', cerebras: '🧠', openrouter: '🔀', mistral: '🌬️', huggingface: '🤗', github: '🐙', cloudflare: '☁️', openai: '🌀', anthropic: '💬', azure: '☁️', ollama_chat: '🦙', openai_compatible: '🖥️'})[preset] || '🧠'; }
 function link(text, url) { const e = el('a', text); e.href = url; e.target = '_blank'; e.rel = 'noopener noreferrer'; return e; }
 function notice(message, error = false) { const e = $('#notice'); e.hidden = false; e.className = error ? 'error' : ''; e.textContent = message; }
 async function guard(action) { try { await action(); } catch (error) { notice(t(error.message), true); } }
@@ -25,7 +29,7 @@ async function save(candidate) {
 function cloneCfg() { return structuredClone(state.cfg); }
 function heading(title, action) { const row = el('div', undefined, 'section-head'); row.append(el('h2', title)); if (action) row.append(action); return row; }
 function note(text) { return el('p', text, 'note'); }
-function empty() { const box = el('div', undefined, 'empty'); box.append(el('span', '◈', 'hero-mark'), el('h2', t('empty_title')), el('p', t('empty_text')), button(t('add_provider'), () => { location.hash = 'providers'; openEditor(); }, 'primary')); return box; }
+function empty() { const box = el('div', undefined, 'empty'); box.append(el('span', '◈', 'hero-mark'), el('h2', t('empty_title')), el('p', t('empty_text')), actionButton('add_provider', () => { location.hash = 'providers'; openEditor(); }, 'primary')); return box; }
 function field(key, value, type = 'text', help = '', label) {
   const wrap = el('label', undefined, `field${type === 'checkbox' ? ' check' : ''}`);
   const name = el('span', label || t(key)); const input = el('input'); input.name = key; input.type = type;
@@ -38,6 +42,65 @@ function selectField(key, value, options, label) {
   const wrap = el('label', undefined, 'field'); wrap.append(el('span', label || t(key))); const input = el('select'); input.name = key;
   for (const [v, text] of options) { const option = el('option', text); option.value = v; input.append(option); } input.value = value; wrap.append(input); return {wrap, input};
 }
+function bindApiKeyMask(input) {
+  const update = () => {
+    const value = input.value;
+    input.type = value.startsWith('!') && ('!secret'.startsWith(value) || /^!secret\s/.test(value)) ? 'text' : 'password';
+  };
+  input.addEventListener('input', update); update();
+}
+async function moveProvider(id, targetId, after = false) {
+  if (state.saving || id === targetId) return;
+  const c = cloneCfg();
+  const from = c.providers.findIndex(p => p.id === id);
+  if (from < 0 || !c.providers.some(p => p.id === targetId)) return;
+  const [profile] = c.providers.splice(from, 1);
+  const to = c.providers.findIndex(p => p.id === targetId) + (after ? 1 : 0);
+  c.providers.splice(to, 0, profile);
+  if (c.providers.every((p, i) => p.id === state.cfg.providers[i].id)) return;
+  await save(c);
+  notice(`${t('provider_order_saved')} ${profile.name}: ${t('position')} ${to + 1}.`);
+  const handle = [...document.querySelectorAll('.drag-handle')].find(e => e.dataset.providerId === id);
+  handle?.focus();
+}
+function providerList(compact = false) {
+  const list = el('ol', undefined, 'provider-list');
+  list.ariaLabel = t('provider_order');
+  const clearDrag = () => {
+    state.draggedProviderId = null;
+    for (const row of list.children) row.classList.remove('drop-before', 'drop-after', 'dragging');
+  };
+  state.cfg.providers.forEach((p, index) => {
+    const row = el('li'); row.append(providerCard(p, index, compact));
+    const handle = $('.drag-handle', row);
+    handle.addEventListener('dragstart', event => {
+      if (state.saving) { event.preventDefault(); return; }
+      state.draggedProviderId = p.id;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', p.id);
+      row.classList.add('dragging');
+    });
+    handle.addEventListener('dragend', clearDrag);
+    const isAfter = event => event.clientY > row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2;
+    row.addEventListener('dragover', event => {
+      if (!state.draggedProviderId || state.draggedProviderId === p.id || state.saving) return;
+      event.preventDefault(); event.dataTransfer.dropEffect = 'move';
+      for (const item of list.children) item.classList.remove('drop-before', 'drop-after');
+      row.classList.add(isAfter(event) ? 'drop-after' : 'drop-before');
+    });
+    row.addEventListener('dragleave', event => {
+      if (!row.contains(event.relatedTarget)) row.classList.remove('drop-before', 'drop-after');
+    });
+    row.addEventListener('drop', event => {
+      if (!state.draggedProviderId) return;
+      event.preventDefault();
+      const id = state.draggedProviderId; const after = isAfter(event);
+      clearDrag(); guard(() => moveProvider(id, p.id, after));
+    });
+    list.append(row);
+  });
+  return list;
+}
 function render() {
   if (!state.cfg || !state.status) return;
   state.page = location.hash.slice(1) in pages ? location.hash.slice(1) : 'overview';
@@ -45,15 +108,24 @@ function render() {
   $('#page-title').textContent = t(state.page); $('#refresh').ariaLabel = t('refresh');
   $('#sync').textContent = t(state.status.synchronized ? 'synced' : 'local_mode');
   $('#version').textContent = `${state.status.version} · experimental · LiteLLM ${state.status.litellm}`;
-  $('#nav').replaceChildren(...Object.entries(pages).map(([key, icon]) => { const a = el('a', undefined, key === state.page ? 'active' : ''); a.href = `#${key}`; a.append(el('span', icon), document.createTextNode(t(key))); return a; }));
+  $('#nav').replaceChildren(...Object.entries(pages).map(([key, icon]) => { const a = el('a', undefined, key === state.page ? 'active' : ''); a.href = `#${key}`; const marker = el('span', icon); marker.ariaHidden = 'true'; a.append(marker, document.createTextNode(t(key))); return a; }));
   const content = $('#content'); content.replaceChildren();
   ({overview: renderOverview, providers: renderProviders, routing: renderRouting, activity: renderActivity, setup: renderSetup, settings: renderSettings})[state.page](content);
 }
 function providerCard(p, index, compact = false) {
   const status = state.status.providers.find(x => x.id === p.id);
   const card = el('article', undefined, 'provider'); const top = el('div', undefined, 'provider-top');
+  const order = el('div', undefined, 'provider-order');
+  const rank = el('span', `#${index + 1}`, 'provider-rank'); rank.ariaLabel = `${t('position')} ${index + 1}`;
+  const handle = button('⠿', () => {}, 'drag-handle'); handle.draggable = true; handle.dataset.providerId = p.id;
+  handle.ariaLabel = `${t('drag_provider')}: ${p.name}`; handle.title = t('drag_provider');
+  const up = button('↑', () => moveProvider(p.id, state.cfg.providers[index - 1]?.id));
+  up.ariaLabel = `${t('move_up')}: ${p.name}`; up.title = t('move_up'); up.disabled = index === 0;
+  const down = button('↓', () => moveProvider(p.id, state.cfg.providers[index + 1]?.id, true));
+  down.ariaLabel = `${t('move_down')}: ${p.name}`; down.title = t('move_down'); down.disabled = index === state.cfg.providers.length - 1;
+  order.append(rank, handle, up, down); card.append(order);
   const name = el('div', undefined, 'provider-name'); name.append(el('h3', p.name), el('small', p.model));
-  top.append(el('div', p.name.slice(0, 2).toUpperCase(), 'provider-logo'), name, el('span', t(status?.status || 'untested'), `pill ${status?.status || ''}`)); card.append(top);
+  top.append(el('div', providerIcon(p.preset), 'provider-logo'), name, el('span', t(status?.status || 'untested'), `pill ${status?.status || ''}`)); card.append(top);
   const quota = el('div', undefined, 'quota');
   for (const [key, period, metric] of [['daily_tokens', 'day', 'tokens'], ['monthly_tokens', 'month', 'tokens'], ['daily_requests', 'day', 'requests']]) {
     if (key !== 'daily_tokens' && !p[key]) continue;
@@ -64,7 +136,7 @@ function providerCard(p, index, compact = false) {
   card.append(quota);
   if (status?.health.until > Date.now() / 1000) card.append(el('p', `${t('retry_at')} ${new Date(status.health.until * 1000).toLocaleTimeString(state.lang)}`, 'muted'));
   const actions = el('div', undefined, 'actions');
-  const toggle = button(t(p.enabled ? 'pause_provider' : 'resume_provider'), async () => {
+  const toggle = actionButton(p.enabled ? 'pause_provider' : 'resume_provider', async () => {
     const c = cloneCfg(); const profile = c.providers.find(item => item.id === p.id);
     profile.enabled = !p.enabled;
     await save(c);
@@ -72,13 +144,12 @@ function providerCard(p, index, compact = false) {
   });
   toggle.title = t('pause_provider_hint');
   toggle.setAttribute('aria-pressed', String(!p.enabled));
-  const test = button(t('test'), async () => { notice(t('testing')); const data = await api('test', 'POST', {provider_id: p.id}); state.status = await api('status'); render(); notice(`${t('test_success')} · ${fmt(data.usage?.total_tokens)} tokens`); });
+  const test = actionButton('test', async () => { notice(t('testing')); const data = await api('test', 'POST', {provider_id: p.id}); state.status = await api('status'); render(); notice(`${t('test_success')} · ${fmt(data.usage?.total_tokens)} tokens`); });
   test.disabled = !p.enabled;
   if (!p.enabled) test.title = t('resume_before_test');
-  actions.append(toggle, button(t('edit'), () => openEditor(p)), test);
+  actions.append(toggle, actionButton('edit', () => openEditor(p)), test);
   if (!compact) {
-    actions.append(button('↑', async () => { if (!index) return; const c = cloneCfg(); [c.providers[index - 1], c.providers[index]] = [c.providers[index], c.providers[index - 1]]; await save(c); }), button('↓', async () => { if (index === state.cfg.providers.length - 1) return; const c = cloneCfg(); [c.providers[index + 1], c.providers[index]] = [c.providers[index], c.providers[index + 1]]; await save(c); }));
-    const remove = button(t('remove'), async () => {
+    const remove = actionButton('remove', async () => {
       if (!confirm(`${t('remove_confirm')} ${p.name}?`)) return;
       const c = cloneCfg(); c.providers.splice(index, 1);
       c.rules = c.rules.map(r => ({...r, provider_ids: r.provider_ids.split(',').filter(id => id.trim() !== p.id).join(',')})).filter(r => r.provider_ids);
@@ -93,19 +164,19 @@ function renderOverview(root) {
   const successes = state.status.recent.filter(r => r.status === 'success');
   const cards = [[state.cfg.providers.filter(p => p.enabled).length, 'active_providers', 'configured_order'], [state.status.providers.filter(p => p.status === 'ready').length, 'ready_providers', 'after_test'], [new Set(state.status.recent.filter(r => r.status === 'success' && state.status.recent.some(x => x.request_id === r.request_id && x.id < r.id && x.status === 'error')).map(r => r.request_id)).size, 'rescued', 'recent_100'], [successes.reduce((n, r) => n + r.tokens, 0), 'tokens', 'recent_100']];
   const stats = el('div', undefined, 'stats'); for (const [value, label, hint] of cards) { const box = el('div', undefined, 'stat'); box.append(el('span', t(label), 'muted'), el('strong', fmt(value)), el('span', t(hint), 'muted')); stats.append(box); } root.append(stats);
-  root.append(heading(t('your_providers'), button(t('add_provider'), () => { location.hash = 'providers'; openEditor(); }, 'primary')));
+  root.append(heading(t('your_providers'), actionButton('add_provider', () => { location.hash = 'providers'; openEditor(); }, 'primary')));
   if (!state.cfg.providers.length) root.append(empty());
-  else { const grid = el('div', undefined, 'provider-grid'); state.cfg.providers.forEach((p, i) => grid.append(providerCard(p, i, true))); root.append(grid); }
+  else root.append(note(t('provider_order_hint')), providerList(true));
   root.append(note(t('quota_note')));
-  const quick = el('section', undefined, 'panel'); quick.append(el('h2', t('connect_assist')), el('p', t('connect_text'), 'muted'), button(t('start_setup'), () => { location.hash = 'setup'; })); root.append(quick);
+  const quick = el('section', undefined, 'panel'); quick.append(el('h2', t('connect_assist')), el('p', t('connect_text'), 'muted'), actionButton('start_setup', () => { location.hash = 'setup'; })); root.append(quick);
 }
 function renderProviders(root) {
   root.append(el('p', t('providers_intro'), 'muted'));
-  if (state.cfg.providers.length) { const grid = el('div', undefined, 'provider-grid'); state.cfg.providers.forEach((p, i) => grid.append(providerCard(p, i))); root.append(grid); }
+  if (state.cfg.providers.length) root.append(note(t('provider_order_hint')), providerList());
   root.append(heading(t('catalog_title'))); root.append(note(t('catalog_note')));
   const search = el('input'); search.type = 'search'; search.placeholder = t('search_provider'); search.ariaLabel = t('search_provider'); const toolbar = el('div', undefined, 'toolbar'); toolbar.append(search); root.append(toolbar);
   const grid = el('div', undefined, 'catalog');
-  function fill() { grid.replaceChildren(); state.catalog.filter(p => p.name.toLowerCase().includes(search.value.toLowerCase())).forEach(p => { const b = button(p.name + ' +', () => openEditor(null, p)); b.append(el('small', p.local ? t('local_provider') : t('check_free_tier'))); grid.append(b); }); }
+  function fill() { grid.replaceChildren(); state.catalog.filter(p => p.name.toLowerCase().includes(search.value.toLowerCase())).forEach(p => { const b = button(`${providerIcon(p.id)} ${p.name} +`, () => openEditor(null, p)); b.append(el('small', p.local ? t('local_provider') : t('check_free_tier'))); grid.append(b); }); }
   search.addEventListener('input', fill); fill(); root.append(grid);
 }
 function openEditor(existing, preset) {
@@ -117,38 +188,57 @@ function openEditor(existing, preset) {
   const grid = el('div', undefined, 'form-grid'); const presetField = selectField('preset', p.preset, state.catalog.map(c => [c.id, c.name])); presetField.input.disabled = Boolean(existing); grid.append(presetField.wrap);
   grid.append(field('name', p.name).wrap); const model = field('model', p.model, 'text', t('model_hint')); model.input.required = true; model.input.setAttribute('list', 'model-list'); grid.append(model.wrap);
   const models = el('datalist'); models.id = 'model-list'; grid.append(models);
-  const modelTools = el('div', undefined, 'actions');
-  const liveChoices = el('div', undefined, 'full');
-  const liveStatus = el('small');
-  const loadModels = button(t('load_sdk_models'), async () => { state.models = await api('models'); const prefix = model.input.value.split('/')[0]; models.replaceChildren(...(state.models[prefix] || []).map(m => { const o = el('option'); o.value = m.startsWith(prefix + '/') ? m : prefix + '/' + m; return o; })); liveChoices.replaceChildren(); liveStatus.textContent = t('models_loaded'); });
+  const liveStatus = el('small', t('provider_models_auto_hint'), 'full'); liveStatus.setAttribute('role', 'status');
   const draftCredentials = () => {
     const draft = {id: p.id, preset: p.preset, api_base: apiBase.input.value.trim()};
     if (clear.input.checked) draft.api_key = '';
     else if (key.input.value.trim()) draft.api_key = key.input.value.trim();
     return draft;
   };
-  const liveModels = button(t('load_provider_models'), async () => {
-    const draft = draftCredentials();
-    liveModels.disabled = true; liveStatus.textContent = t('provider_models_loading');
+  const fillModels = values => models.replaceChildren(...values.map(value => { const option = el('option'); option.value = value; return option; }));
+  const sdkSuggestions = async () => {
+    if (!Object.keys(state.models).length) state.models = await api('models');
+    const prefix = preset.prefix;
+    return (state.models[prefix] || []).map(value => value.startsWith(prefix + '/') ? value : prefix + '/' + value);
+  };
+  let discoveryGeneration = 0;
+  let lastDraft = null;
+  const refreshModels = async () => {
+    const draft = draftCredentials(); const signature = JSON.stringify(draft);
+    if (lastDraft === signature) return;
+    lastDraft = signature;
+    const generation = ++discoveryGeneration;
+    const current = () => generation === discoveryGeneration && liveStatus.isConnected && $('#editor').open && JSON.stringify(draftCredentials()) === signature;
+    fillModels([]);
+    liveStatus.textContent = t('provider_models_loading');
+    let suggestions = [];
+    try { suggestions = await sdkSuggestions(); } catch { /* Manual model entry remains available. */ }
+    if (!current()) return;
+    fillModels(suggestions);
+    const anonymous = ['openrouter', 'huggingface', 'nvidia_nim', 'openai_compatible', 'ollama_chat'].includes(p.preset);
+    if (!(draft.api_key || (p.api_key_set && !clear.input.checked) || anonymous)) {
+      liveStatus.textContent = t('provider_models_auto_hint'); return;
+    }
     try {
       const data = await api('provider-models', 'POST', draft);
-      if (!liveChoices.isConnected) return;
-      if (JSON.stringify(draftCredentials()) !== JSON.stringify(draft)) throw new Error('model_discovery_changed');
-      models.replaceChildren(...data.models.map(value => { const option = el('option'); option.value = value; return option; }));
-      const picker = selectField('discovered_model', data.models.includes(model.input.value) ? model.input.value : '', [['', t('choose_provider_model')], ...data.models.map(value => [value, value])]);
-      picker.input.name = '';
-      picker.input.addEventListener('change', () => { if (picker.input.value) model.input.value = picker.input.value; });
-      liveChoices.replaceChildren(picker.wrap);
+      if (!current()) return;
+      fillModels(data.models);
       liveStatus.textContent = `${fmt(data.models.length)} ${t(data.complete ? 'provider_models_loaded' : 'provider_models_partial')}`;
     } catch (error) {
-      liveChoices.replaceChildren(); liveStatus.textContent = t(error.message);
-    } finally { liveModels.disabled = false; }
-  });
-  modelTools.append(liveModels, loadModels); grid.append(modelTools);
-  const key = field('api_key', '', 'password', p.api_key_reference ? `${t('secret_kept')} ${p.api_key_reference}` : t('key_hint')); key.input.autocomplete = 'new-password'; key.input.placeholder = p.api_key_set ? t('keep_key') : '!secret my_ai_key'; grid.append(key.wrap);
+      if (!current()) return;
+      liveStatus.textContent = `${t(error.message)} ${t('models_fallback_hint')}`;
+    }
+  };
+  const credentialsEdited = () => {
+    discoveryGeneration++; lastDraft = null; fillModels([]);
+    liveStatus.textContent = t('provider_models_auto_hint');
+  };
+  const key = field('api_key', '', 'password', p.api_key_reference ? `${t('secret_kept')} ${p.api_key_reference}` : t('key_hint')); bindApiKeyMask(key.input); key.input.autocomplete = 'new-password'; key.input.spellcheck = false; key.input.autocapitalize = 'none'; key.input.placeholder = p.api_key_set ? t('keep_key') : '!secret my_ai_key'; grid.append(key.wrap);
   const clear = field('clear_key', false, 'checkbox'); if (existing) grid.append(clear.wrap);
   const apiBase = field('api_base', p.api_base || '', 'text', t('base_hint'));
-  grid.append(apiBase.wrap, liveChoices, liveStatus);
+  grid.append(apiBase.wrap, liveStatus);
+  for (const input of [key.input, apiBase.input]) { input.addEventListener('input', credentialsEdited); input.addEventListener('change', () => guard(refreshModels)); }
+  clear.input.addEventListener('change', () => { credentialsEdited(); guard(refreshModels); });
   for (const k of ['enabled', 'free_only', 'local', 'supports_tools', 'supports_vision']) grid.append(field(k, p[k], 'checkbox').wrap);
   fields.append(grid);
   const advanced = el('details'); advanced.append(el('summary', t('advanced_limits'))); const limits = el('div', undefined, 'form-grid');
@@ -173,12 +263,13 @@ function openEditor(existing, preset) {
     });
   };
   $('#editor').showModal();
+  guard(refreshModels);
 }
 function renderRouting(root) {
   root.append(el('p', t('routing_intro'), 'muted'));
   const presets = el('div', undefined, 'presets'); for (const k of ['priority', 'quota', 'round_robin', 'local_first']) { const b = button('', async () => { const c = cloneCfg(); c.routing = k; await save(c); }, `preset ${state.cfg.routing === k ? 'selected' : ''}`); b.append(el('h3', `${state.cfg.routing === k ? '●' : '○'} ${t(k)}`), el('p', t(k + '_description'))); presets.append(b); } root.append(presets);
   root.append(note(t('rule_semantics'))); const panel = el('section', undefined, 'panel'); panel.append(el('h2', t('custom_rules')));
-  state.cfg.rules.forEach((r, index) => { const row = el('div', undefined, 'rule'); const title = el('div'); title.append(el('strong', r.name), el('small', `${r.alias} → ${state.cfg.providers.filter(p => r.provider_ids.split(',').map(id => id.trim()).includes(p.id)).map(p => p.name).join(' → ')}${r.require_tools ? ' · ' + t('require_tools') : ''}`)); row.append(title, button('↑', async () => { if (!index) return; const c = cloneCfg(); [c.rules[index - 1], c.rules[index]] = [c.rules[index], c.rules[index - 1]]; await save(c); }), button(t('remove'), async () => { const c = cloneCfg(); c.rules.splice(index, 1); await save(c); }, 'danger')); panel.append(row); });
+  state.cfg.rules.forEach((r, index) => { const row = el('div', undefined, 'rule'); const title = el('div'); title.append(el('strong', r.name), el('small', `${r.alias} → ${state.cfg.providers.filter(p => r.provider_ids.split(',').map(id => id.trim()).includes(p.id)).map(p => p.name).join(' → ')}${r.require_tools ? ' · ' + t('require_tools') : ''}`)); row.append(title, button('↑', async () => { if (!index) return; const c = cloneCfg(); [c.rules[index - 1], c.rules[index]] = [c.rules[index], c.rules[index - 1]]; await save(c); }), actionButton('remove', async () => { const c = cloneCfg(); c.rules.splice(index, 1); await save(c); }, 'danger')); panel.append(row); });
   if (!state.cfg.rules.length) panel.append(el('p', t('no_rules'), 'muted'));
   const form = el('form'); const grid = el('div', undefined, 'form-grid'); const name = field('rule_name', ''); name.input.required = true; const alias = field('alias', 'assist-auto', 'text', t('alias_hint')); alias.input.required = true;
   const tools = field('require_tools', false, 'checkbox'); grid.append(name.wrap, alias.wrap, tools.wrap); form.append(grid);
@@ -213,7 +304,7 @@ function renderSetup(root) {
     install.append(installLinks);
     const connect = step(t('mcp_assist_connect'), t('mcp_assist_connect_text'));
     const connection = el('div');
-    connect.append(button(t('reveal_connection'), async () => {
+    connect.append(actionButton('reveal_connection', async () => {
       const data = await api('connection', 'POST', {integration: 'mcp_assist'});
       connection.replaceChildren(connectionRow(t('mcp_assist_server_type'), data.server_type), connectionRow(t('mcp_assist_base_url'), data.base_url), connectionRow(t('router_key'), data.api_key, true), connectionRow(t('model'), data.model), connectionRow(t('mcp_assist_timeout'), String(data.request_timeout)));
       connection.append(note(t('mcp_assist_url_hint')));
@@ -224,7 +315,7 @@ function renderSetup(root) {
     root.append(steps, note(t('mcp_assist_boundary')));
     return;
   }
-  const second = step(t('setup_2'), t('setup_2_text')); const connection = el('div'); second.append(button(t('reveal_connection'), async () => { const data = await api('connection', 'POST', {}); connection.replaceChildren(connectionRow(t('base_url'), data.base_url), connectionRow(t('router_key'), data.api_key, true), connectionRow(t('model'), data.model)); const actions = el('div', undefined, 'actions'); actions.append(link(t('open_litellm') + ' ↗', data.assist_url), link(t('official_docs') + ' ↗', data.docs_url)); connection.append(actions); }), connection);
+  const second = step(t('setup_2'), t('setup_2_text')); const connection = el('div'); second.append(actionButton('reveal_connection', async () => { const data = await api('connection', 'POST', {}); connection.replaceChildren(connectionRow(t('base_url'), data.base_url), connectionRow(t('router_key'), data.api_key, true), connectionRow(t('model'), data.model)); const actions = el('div', undefined, 'actions'); actions.append(link(t('open_litellm') + ' ↗', data.assist_url), link(t('official_docs') + ' ↗', data.docs_url)); connection.append(actions); }), connection);
   const third = step(t('setup_3'), t('setup_3_text')); third.append(link(t('open_assist') + ' ↗', 'https://my.home-assistant.io/redirect/voice_assistants/'));
   const fourth = step(t('setup_4'), t('setup_4_text')); const actions = el('div', undefined, 'actions'); actions.append(link(t('mcp_server') + ' ↗', 'https://my.home-assistant.io/redirect/config_flow_start/?domain=mcp_server'), link(t('mcp_client') + ' ↗', 'https://my.home-assistant.io/redirect/config_flow_start/?domain=mcp')); fourth.append(actions); root.append(steps, note(t('setup_boundary')));
 }
@@ -233,7 +324,7 @@ function renderSettings(root) {
   for (const key of ['max_output_tokens', 'request_timeout', 'attempt_timeout', 'max_attempts', 'cooldown_seconds', 'reserve_percent', 'history_days']) { const f = field(key, state.cfg[key], 'number'); f.input.min = key === 'reserve_percent' ? '0' : '1'; f.input.step = '1'; grid.append(f.wrap); }
   grid.append(field('gateway_url', state.cfg.gateway_url, 'text', t('gateway_url_hint')).wrap, field('allow_paid', state.cfg.allow_paid, 'checkbox').wrap); form.append(grid, note(t('paid_hint'))); const submit = el('button', t('save'), 'primary'); submit.type = 'submit'; form.append(submit); root.append(form);
   form.addEventListener('submit', e => { e.preventDefault(); guard(async () => { const c = cloneCfg(); for (const input of form.querySelectorAll('input')) c[input.name] = input.type === 'checkbox' ? input.checked : input.type === 'number' ? Number(input.value) : input.value.trim(); await save(c); }); });
-  const versions = el('section', undefined, 'panel'); versions.append(el('h2', t('versions')), el('p', `LiteLLM ${state.status.litellm} · ${t('reviewed_pin')} ${state.status.pinned}`, 'muted'), button(t('check_versions'), async () => { const data = await api('versions', 'POST', {}); notice(`${t(data.update_available ? 'update_available' : 'up_to_date')} · ${data.latest}`); versions.append(link(t('release_notes') + ' ↗', data.url)); }), note(t('version_hint'))); root.append(versions);
+  const versions = el('section', undefined, 'panel'); versions.append(el('h2', t('versions')), el('p', `LiteLLM ${state.status.litellm} · ${t('reviewed_pin')} ${state.status.pinned}`, 'muted'), actionButton('check_versions', async () => { const data = await api('versions', 'POST', {}); notice(`${t(data.update_available ? 'update_available' : 'up_to_date')} · ${data.latest}`); versions.append(link(t('release_notes') + ' ↗', data.url)); }), note(t('version_hint'))); root.append(versions);
 }
 async function load() { const [settings, status, catalog] = await Promise.all([api('settings'), api('status'), api('catalog')]); state.cfg = settings.options; state.revision = settings.revision; state.status = status; state.catalog = catalog; state.lang = state.cfg.language; render(); }
 $('#close-editor').onclick = $('#cancel-editor').onclick = () => $('#editor').close();
@@ -242,4 +333,4 @@ $('#language').onchange = () => guard(async () => { const lang = $('#language').
 window.addEventListener('hashchange', render);
 window.addEventListener('unhandledrejection', () => notice(t('network_error'), true));
 (async () => { state.words = await (await fetch('i18n.json')).json(); $('#content').append(el('p', t('loading'), 'loading')); await guard(load); })();
-setInterval(() => { if (!state.cfg || document.hidden || $('#editor').open || !['overview', 'providers', 'activity'].includes(state.page)) return; guard(async () => { state.status = await api('status'); render(); }); }, 15000);
+setInterval(() => { if (!state.cfg || state.saving || state.draggedProviderId || document.hidden || $('#editor').open || !['overview', 'providers', 'activity'].includes(state.page)) return; guard(async () => { const status = await api('status'); if (state.saving || state.draggedProviderId || $('#editor').open) return; state.status = status; render(); }); }, 15000);

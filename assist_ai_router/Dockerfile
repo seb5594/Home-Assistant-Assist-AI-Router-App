@@ -1,7 +1,7 @@
 ARG BUILD_FROM=ghcr.io/berriai/litellm:v1.106.4@sha256:c169fb3adc514fcf210377c203f3de406d54f10bfdacf13948a4a839db9af7de
 FROM ${BUILD_FROM}
 
-ARG BUILD_VERSION=2026-10-29.2
+ARG BUILD_VERSION=1.0.0
 ARG BUILD_ARCH=amd64
 LABEL io.hass.version="${BUILD_VERSION}" \
     io.hass.type="addon" \

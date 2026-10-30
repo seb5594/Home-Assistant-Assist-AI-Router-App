@@ -1,6 +1,13 @@
 # Changelog
 
-## 2026-10-29.2
+## 1.0.0
+
+* Switch app versioning to MAJOR.MINOR.PATCH; retain the experimental stage.
+* Show providers in numbered vertical lists with drag-and-drop and accessible move buttons, saving order immediately.
+* Keep !secret references visible while typing their prefix; restore password masking on any mismatch.
+* Automatically fetch provider models on editor opening and completed credential changes; show suggestions directly in LLM model with SDK/manual fallback, removing the separate load button and picker.
+* Add navigation, provider and action icons and color the footer heart red.
+* Expand German and English READMEs to cover installation, all provider templates, configuration, quotas, routing, Assist/MCP and operational limits.
 
 * Link the updated developer credit to the project repository.
 * Add a More Home Assistant Apps button beside Support my work ☕ in the ingress footer.
