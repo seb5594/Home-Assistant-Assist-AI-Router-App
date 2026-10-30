@@ -228,4 +228,6 @@ Automated tests cover routing, secrets, HTTP boundaries, metadata discovery and 
 
 The footer links this project and other apps, includes **Support my work ☕**, and displays “Application developed by seb5594 (Sebastian Schmidt) - Made with ♥ in Germany” with a red heart.
 
-[Support my work ☕](https://paypal.me/seb5594). Published under the [Apache License 2.0](LICENSE).
+[Support my work ☕](https://paypal.me/seb5594). Published under the [MIT License](LICENSE).
+
+Copyright (c) 2026 seb5594 (Sebastian Schmidt). LiteLLM and other third-party components retain their respective licenses.
