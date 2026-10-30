@@ -13,7 +13,7 @@ configuration:
       preset:
         name: Anbietervorlage
       model:
-        name: LiteLLM-Modell
+        name: LLM-Modell
       api_key:
         name: API-Schlüssel oder !secret-Verweis
       api_base:

@@ -12,11 +12,11 @@ sys.path.insert(0, str(APP))
 
 
 class Packaging(unittest.TestCase):
-    def test_version_pin_and_experimental_metadata(self):
+    def test_version_pin_and_stable_metadata(self):
         from app.catalog import LITELLM_VERSION, VERSION
         cfg = yaml.safe_load((APP / "config.yaml").read_text(encoding="utf-8"))
         self.assertEqual(cfg["version"], VERSION)
-        self.assertEqual(cfg["stage"], "experimental")
+        self.assertEqual(cfg["stage"], "stable")
         self.assertEqual(cfg["arch"], ["amd64", "aarch64"])
         self.assertEqual(cfg["homeassistant"], "2026.8.0")
         docker = (APP / "Dockerfile").read_text()

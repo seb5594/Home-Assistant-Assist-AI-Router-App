@@ -20,6 +20,7 @@ from .ledger import Ledger
 from .router import GatewayError, Router, sdk
 from .settings import ConfigError, Settings, Supervisor
 from .discovery import discover
+from .accounts import Accounts
 
 STATIC = Path(__file__).parent / "static"
 
@@ -54,6 +55,7 @@ class State:
         if len(self.token) < 32:
             raise ConfigError("invalid_gateway_token")
         self.dev = dev
+        self.accounts = Accounts()
         self.version_lock = threading.Lock()
         self.version_result = None
         self.version_checked = 0
@@ -258,6 +260,10 @@ class Handler(BaseHTTPRequestHandler):
                 raise GatewayError("invalid_request", 400)
             if path == "/api/connection":
                 return self.reply(200, state.connection(body.get("integration", "litellm")))
+            if path == "/api/provider-credential":
+                return self.reply(200, state.settings.credential(body.get("provider_id"), body.get("revision")))
+            if path == "/api/provider-account":
+                return self.reply(200, state.accounts.read(state.settings.discovery_profile(body)))
             if path == "/api/provider-models":
                 return self.reply(200, discover(state.settings.discovery_profile(body)))
             if path == "/api/versions":
@@ -293,7 +299,7 @@ def main():
     stopped = threading.Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stopped.set())
-    print(f"Assist AI Router {VERSION} · experimental · LiteLLM {LITELLM_VERSION}", flush=True)
+    print(f"Assist AI Router {VERSION} · LiteLLM {LITELLM_VERSION}", flush=True)
     stopped.wait()
     for server in (admin, api):
         server.shutdown()

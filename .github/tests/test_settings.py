@@ -66,6 +66,33 @@ class Configuration(unittest.TestCase):
             self.assertEqual(self.settings.snapshot()["providers"][0]["enabled"], enabled)
             self.assertEqual(self.settings.snapshot()["rules"], cfg["rules"])
 
+    def test_reordering_persists_by_id_without_swapping_credentials_or_rules(self):
+        self.supervisor.raw["providers"].append(profile("b", api_key="OTHER-PRIVATE", enabled=False))
+        self.supervisor.raw["rules"] = [dict(name="Selected", alias="selected", require_tools=False, provider_ids="a,b")]
+        self.settings.reload()
+        cfg = self.editable()
+        cfg["providers"].reverse()
+        self.settings.save(cfg, self.settings.revision())
+        restored = Settings(self.tmp.name, self.supervisor)
+        self.assertEqual([p["id"] for p in restored.snapshot()["providers"]], ["b", "a"])
+        self.assertEqual([p["api_key"] for p in self.supervisor.saved["providers"]], ["OTHER-PRIVATE", "!secret groq_key"])
+        self.assertEqual([p["api_key"] for p in restored.snapshot()["providers"]], ["OTHER-PRIVATE", "RESOLVED-PRIVATE-KEY"])
+        self.assertFalse(restored.snapshot()["providers"][0]["enabled"])
+        self.assertEqual(restored.snapshot()["rules"], cfg["rules"])
+
+    def test_credential_editor_loads_raw_entry_and_never_resolved_secret(self):
+        result = self.settings.credential("a", self.settings.revision())
+        self.assertEqual(result, {"api_key": "!secret groq_key"})
+        self.assertNotIn("RESOLVED-PRIVATE-KEY", json.dumps(result))
+        self.supervisor.raw["providers"][0]["api_key"] = "ORIGINAL-LITERAL"
+        self.settings.reload()
+        self.assertEqual(self.settings.credential("a", self.settings.revision()), {"api_key": "ORIGINAL-LITERAL"})
+        self.assertNotIn("ORIGINAL-LITERAL", json.dumps(self.settings.view()))
+        with self.assertRaisesRegex(ConfigError, "config_conflict"):
+            self.settings.credential("a", "stale")
+        with self.assertRaisesRegex(ConfigError, "invalid_provider_id"):
+            self.settings.credential("missing", self.settings.revision())
+
     def test_literal_key_is_masked_and_blank_omission_preserves_it(self):
         self.supervisor.raw["providers"][0]["api_key"] = "LITERAL-PRIVATE"
         self.settings.reload()

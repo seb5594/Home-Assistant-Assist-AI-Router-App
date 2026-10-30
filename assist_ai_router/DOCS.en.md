@@ -1,12 +1,12 @@
 # Assist AI Router — English
 
-Experimental · **2026-10-29** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Version **1.0.0** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
 
 ## Quick start
 
 1. Install/start the app and open its ingress web interface. LiteLLM is included.
 2. Select a provider template, enter its key and model, save, and test the connection. Tests send a small real request.
-3. Add another independent provider and sort profiles with ↑/↓. Fixed priority tries them in that order.
+3. Add another independent provider and sort the numbered vertical list using the ⠿ drag handle or ↑/↓ buttons. Fixed priority tries them in that order.
 4. Open **Connect Assist → Show connection details → Add LiteLLM to Home Assistant**. Copy the URL and router key into the native integration form. The router key is separate from provider keys.
 5. Open the LiteLLM entry, choose **Add conversation agent**, select **assist-auto**, enable Assist tools if needed, expose the desired entities, and select the agent in your voice assistant.
 
@@ -18,15 +18,17 @@ Use **Pause/Resume** directly on provider cards in Overview or Providers. Paused
 
 Saving in ingress writes the same app options as the Home Assistant Configuration tab through `/addons/self/options`, then loads resolved options and applies them immediately. Configuration-tab changes load on app restart or when refreshing router settings. Revision conflicts stop stale UI edits from overwriting newer options; Supervisor has no atomic compare-and-swap across separate editors.
 
-Enter keys directly in the form or reference an existing Home Assistant secret using `!secret name`. Supervisor resolves references; edits preserve the raw reference. Resolved keys are never returned to the UI. Leave the key field blank while editing to preserve it; use **Remove saved key** to clear it. This app cannot create new entries in HA's secrets file. Direct form entry requires no text files.
+The key field shows `!`, `!s`, `!se` through `!secret name` without masking while the value follows the secret prefix; any deviation restores password masking.
+
+Enter keys directly in the form or reference an existing Home Assistant secret using `!secret name`. Supervisor resolves references; edits preserve the raw reference. Resolved secret values are never returned. Opening fetches the original entry through a dedicated ingress endpoint; literal keys can be revealed with Show/hide. Secret references are recommended. Leave the key field blank while editing to preserve it; use **Remove saved key** to clear it. This app cannot create new entries in HA's secrets file. Direct form entry requires no text files.
 
 ### Load models directly from a provider
 
-Enter the API key and custom API base URL if needed, then choose **Load models directly from provider**. Select a returned model; the LiteLLM prefix is added automatically, so no model name is required beforehand. A new literal key works before saving without persisting the profile/key. Saved keys and secret references are resolved on the server. A **new** `!secret` reference needs to be saved in a profile first, using an SDK suggestion as the initial model if needed. Changing the provider or API destination requires re-entering a saved key or explicitly saving the changed profile.
+Enter the API key and custom API base URL if needed, then leave the edited field. Models load automatically on opening with saved credentials and after completed credential edits, directly as suggestions inside **LLM model** without a separate load button or second picker. Clear/type in the field to choose another model; the LiteLLM prefix is added automatically, so no model name is required beforehand. A new literal key works before saving without persisting the profile/key. Saved keys and secret references are resolved on the server. A **new** `!secret` reference needs to be saved in a profile first, using an SDK suggestion as the initial model if needed. Changing the provider or API destination requires re-entering a saved key or explicitly saving the changed profile.
 
 Direct adapters cover Gemini, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, SambaNova, Together AI, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Cohere, Ollama and custom OpenAI-compatible model endpoints. Other providers or account-specific deployment APIs can use SDK suggestions/manual entry. Provider responses do not guarantee free pricing, individual account permission or tool support. Some APIs list non-chat models; Gemini/Cohere use known chat filters. Pagination, response sizes and processing time are bounded, and partial lists are labeled.
 
-Discovery runs only after a click and loads metadata without generating a prompt or changing token counters. Provider metadata rate limits may still apply. Credentials are sent in headers to the configured provider, never in URLs, UI responses or logs; redirects are blocked and provider error bodies are not echoed.
+Discovery runs on opening the provider editor or completing credential changes and loads metadata without generating a prompt or changing token counters. Provider metadata rate limits may still apply. Credentials are sent in headers to the configured provider, never in URLs, UI responses or logs; redirects are blocked and provider error bodies are not echoed.
 
 There are 21 templates: Google AI Studio, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, GitHub Models, SambaNova, Together AI, Fireworks AI, Cohere, Cloudflare, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Perplexity, Azure, Ollama and OpenAI-compatible endpoints. Model examples are editable. The model catalog comes from the pinned SDK and does not verify account availability. Some providers need a custom account/deployment URL or API version.
 
@@ -65,10 +67,14 @@ Ingress administration listens on 8099 and accepts only Supervisor's ingress pee
 
 SQLite, options and the generated router key live in `/data`; include them in app backups. Backups may contain credentials. The image uses the exact official LiteLLM release tag with upstream's frozen dependencies; startup verifies the SDK version. The full upstream image is larger than an SDK-only install. Telemetry is disabled. No periodic paid health checks, Redis or PostgreSQL are required.
 
-The stable version check contacts GitHub only after a click, caches for one hour, and installs nothing. Updates ship in reviewed app releases. Calendar versions use `YYYY-MM-DD` for the first build and `.2`, `.3`, … for subsequent builds that day, using Europe/Berlin dates. No trailing dot. This first release line remains experimental.
+The stable version check contacts GitHub only after a click, caches for one hour, and installs nothing. Updates ship in reviewed app releases. Starting with v1.0.0, semantic versions (`MAJOR.MINOR.PATCH`) replace calendar versions.
 
 If all allowed providers are exhausted/unavailable and no local fallback is available, the API returns HTTP 503 with `no_provider_available`. Unlimited cloud answers cannot be guaranteed.
 
 Before a stable release, test installation on real HA OS amd64/aarch64, protection mode/ingress, secret persistence/restart, the native LiteLLM setup and Assist tool calls, real multi-provider 429/Retry-After behavior and backup restore. Software tests do not replace these acceptance checks. Record visual browser verification separately.
 
 References: [native LiteLLM integration](https://www.home-assistant.io/integrations/litellm/), [app options/secrets](https://contributors.home-assistant.io/apps/guides/options/), [Supervisor app API](https://contributors.home-assistant.io/apps/supervisor-api/apps/), [LiteLLM routing](https://docs.litellm.ai/docs/routing), [pinned release](https://github.com/BerriAI/litellm/releases/tag/v1.106.4).
+
+## API plans and rule examples
+
+The [English README](../README.en.md) contains concrete alias/tool/catch-all rules and a dated table of official plan/limit sources. The editor distinguishes documentation examples from OpenRouter/DeepSeek account data. Currency balances are not token limits; unknown values stay unknown. Example limits only populate the form after a click.

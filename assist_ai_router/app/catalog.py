@@ -1,5 +1,7 @@
 """Starter profiles. Availability and free allowances belong to each account, never inferred."""
-VERSION = "2026-10-29"
+from .offers import offer
+
+VERSION = "1.0.0"
 LITELLM_VERSION = "1.106.4"
 
 # Prefixes are LiteLLM SDK providers; model suggestions are editable examples, not free-tier claims.
@@ -30,7 +32,7 @@ CATALOG = [
 
 def catalog():
     return [dict(id=i, name=n, prefix=p, example_model=m, setup_url=s, usage_url=u,
-                 local=i == "ollama_chat") for i, n, p, m, s, u in CATALOG]
+                 local=i == "ollama_chat", offer=offer(i)) for i, n, p, m, s, u in CATALOG]
 
 
 DEFAULTS = dict(language="de", routing="priority", providers=[], rules=[],

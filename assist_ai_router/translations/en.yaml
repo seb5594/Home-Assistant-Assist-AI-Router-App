@@ -13,7 +13,7 @@ configuration:
       preset:
         name: Provider template
       model:
-        name: LiteLLM model
+        name: LLM model
       api_key:
         name: API key or !secret reference
       api_base:

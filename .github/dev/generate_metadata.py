@@ -31,9 +31,9 @@ def main():
     options_schema.update(language="list(de|en)", routing="list(priority|quota|round_robin|local_first)",
                           providers=[provider_schema], rules=[rules])
     cfg = dict(name="Assist AI Router", version=VERSION, slug="assist_ai_router",
-               description="Experimental multi-provider AI gateway for Home Assistant Assist, powered by LiteLLM.",
+               description="Multi-provider AI gateway for Home Assistant Assist, powered by LiteLLM.",
                url="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App",
-               arch=["amd64", "aarch64"], homeassistant="2026.8.0", stage="experimental",
+               arch=["amd64", "aarch64"], homeassistant="2026.8.0", stage="stable",
                startup="application", boot="auto", init=True, ingress=True, ingress_port=8099,
                panel_icon="mdi:routes", panel_title="Assist AI Router", ports={"8000/tcp": None},
                ports_description={"8000/tcp": "Optional authenticated OpenAI-compatible API (internal access works without publishing)"},

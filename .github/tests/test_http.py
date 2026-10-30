@@ -71,6 +71,29 @@ class HTTP(unittest.TestCase):
         self.assertEqual(headers["Cache-Control"], "no-store")
         self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
 
+    def test_original_credential_is_only_loaded_by_protected_ingress_post(self):
+        body = dict(provider_id="a", revision=self.state.settings.revision())
+        code, raw, headers = self.request(self.admin, "/api/provider-credential", body)
+        self.assertEqual(code, 200)
+        self.assertEqual(json.loads(raw), {"api_key": "key-a"})
+        self.assertEqual(headers["Cache-Control"], "no-store")
+        self.assertEqual(self.request(self.admin, "/api/provider-credential", body, custom=False)[0], 403)
+        self.assertEqual(self.request(self.api, "/api/provider-credential", body, auth=True)[0], 404)
+        self.assertEqual(self.request(self.admin, "/api/provider-credential")[0], 404)
+        body["revision"] = "stale"
+        self.assertEqual(self.request(self.admin, "/api/provider-credential", body)[0], 409)
+
+    def test_account_metadata_uses_draft_binding_and_is_ingress_only(self):
+        draft = dict(id="a", preset="groq", api_base="")
+        code, raw, _ = self.request(self.admin, "/api/provider-account", draft)
+        self.assertEqual(code, 200)
+        self.assertEqual(json.loads(raw)["status"], "unsupported")
+        self.assertNotIn("key-a", raw.decode())
+        self.assertEqual(self.request(self.admin, "/api/provider-account", draft, custom=False)[0], 403)
+        self.assertEqual(self.request(self.api, "/api/provider-account", draft, auth=True)[0], 404)
+        draft["api_base"] = "https://other.example/v1"
+        self.assertEqual(self.request(self.admin, "/api/provider-account", draft)[0], 400)
+
     def test_live_model_discovery_is_ingress_only_and_does_not_save_credentials(self):
         draft = dict(preset="groq", api_key="draft-private-key", api_base="")
         captured = []

@@ -1,1 +1,1 @@
-"""Assist AI Router: experimental Home Assistant app powered by LiteLLM."""
+"""Assist AI Router: Home Assistant app powered by LiteLLM."""
