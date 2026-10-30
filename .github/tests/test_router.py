@@ -50,6 +50,25 @@ class Routing(unittest.TestCase):
         return Router(self.settings, self.ledger, call or (lambda *a: response())).run(
             dict(model="assist-auto", messages=[dict(role="user", content="Hello")], **payload))
 
+    def test_readme_rule_examples_match_first_rule_and_global_priority(self):
+        rules = [
+            dict(name="Devices", alias="assist-auto", require_tools=True, provider_ids="local,groq"),
+            dict(name="Text", alias="assist-auto", require_tools=False, provider_ids="groq,gemini"),
+            dict(name="Private", alias="assist-private", require_tools=False, provider_ids="local"),
+            dict(name="Cloud", alias="assist-cloud", require_tools=False, provider_ids="gemini,groq"),
+            dict(name="Catch all", alias="*", require_tools=False, provider_ids="groq,gemini")]
+        self.configure([profile("local", local=True), profile("groq"), profile("gemini")], rules=rules)
+        router = Router(self.settings, self.ledger)
+        cfg = self.settings.snapshot()
+        for alias, tools, expected in [("assist-auto", [{}], ["local", "groq"]),
+                                       ("assist-auto", [], ["groq", "gemini"]),
+                                       ("assist-private", [{}], ["local"]),
+                                       ("assist-cloud", [], ["groq", "gemini"])]:
+            payload = dict(model=alias, tools=tools, max_tokens=8, messages=[dict(role="user", content="Hi")])
+            self.assertEqual([p["id"] for p in router.candidates(cfg, payload, 0)], expected)
+        with self.assertRaisesRegex(GatewayError, "unknown_model"):
+            router.candidates(cfg, dict(model="not-defined", tools=[], messages=[]), 0)
+
     def test_priority_and_actual_usage(self):
         result, meta = self.run_request()
         self.assertEqual(meta["provider"], "a")

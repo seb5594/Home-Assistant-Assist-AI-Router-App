@@ -190,5 +190,78 @@ class ModelDiscovery(unittest.TestCase):
                 settings.discovery_profile(dict(preset="groq", api_key="a\nb"))
 
 
+class AccountMetadata(unittest.TestCase):
+    def profile(self, **changes):
+        return dict(preset="openrouter", prefix="openrouter", api_base="", api_key="PRIVATE", **changes)
+
+    def test_openrouter_preserves_zero_and_does_not_infer_null_or_leak_labels(self):
+        from app.accounts import Accounts
+        data = dict(data=dict(is_free_tier=True, label="PRIVATE", limit=None, limit_remaining=0,
+                              usage_daily=0.25, usage_monthly=3.5,
+                              free_model_daily_requests=dict(limit=50, used=50, remaining=0)))
+        captures = []
+        def fetch(url, headers, timeout):
+            captures.append((url, headers))
+            return data
+        accounts = Accounts(fetch=fetch, clock=lambda: 1000)
+        result = accounts.read(self.profile())
+        self.assertEqual(result["plan"], "openrouter_free_tier")
+        values = {v["kind"]: v["value"] for v in result["values"]}
+        self.assertNotIn("key_limit", values)
+        self.assertEqual(values["key_remaining"], 0)
+        self.assertEqual(values["free_requests_remaining"], 0)
+        self.assertNotIn("PRIVATE", json.dumps(result))
+        self.assertEqual(captures[0], ("https://openrouter.ai/api/v1/key", {"Authorization": "Bearer PRIVATE"}))
+        result["values"].clear()
+        self.assertTrue(accounts.read(self.profile())["values"])
+        self.assertEqual(len(captures), 1)
+
+    def test_account_cache_is_bound_to_key_and_expires(self):
+        from app.accounts import Accounts
+        now, calls = [1000], []
+        def fetch(*args):
+            calls.append(args)
+            return {"data": {"is_free_tier": False}}
+        accounts = Accounts(fetch=fetch, clock=lambda: now[0])
+        accounts.read(self.profile())
+        p = self.profile(); p["api_key"] = "DIFFERENT"
+        accounts.read(p)
+        now[0] += 301
+        accounts.read(self.profile())
+        self.assertEqual(len(calls), 3)
+
+    def test_custom_destinations_unsupported_and_missing_key_never_send_credentials(self):
+        from app.accounts import Accounts
+        def fetch(*args):
+            self.fail("Unexpected credential request")
+        accounts = Accounts(fetch=fetch)
+        p = self.profile(); p["api_base"] = "https://proxy.example/v1"
+        self.assertEqual(accounts.read(p)["status"], "unsupported")
+        p = self.profile(); p["api_key"] = ""
+        self.assertEqual(accounts.read(p)["status"], "key_required")
+        p = self.profile(); p["preset"] = "gemini"
+        self.assertEqual(accounts.read(p)["status"], "unsupported")
+
+    def test_deepseek_balance_units_are_not_converted_to_tokens_or_plans(self):
+        from app.accounts import Accounts
+        payload = dict(balance_infos=[dict(currency="USD", total_balance="0.0001", granted_balance="0", topped_up_balance="0.0001"), dict(currency="SECRET", total_balance="100")])
+        p = self.profile(); p["preset"] = "deepseek"
+        result = Accounts(fetch=lambda *a: payload).read(p)
+        self.assertEqual(result["plan"], "unknown")
+        self.assertEqual(len(result["values"]), 3)
+        self.assertEqual(result["values"][0], dict(kind="balance", value=0.0001, unit="USD"))
+        self.assertNotIn("tokens", json.dumps(result))
+
+    def test_malformed_numbers_and_error_bodies_never_reach_ui(self):
+        from app.accounts import Accounts
+        from app.router import GatewayError
+        payload = {"data": {"limit": "NaN", "limit_remaining": float("inf"), "usage_daily": True, "label": "PRIVATE"}}
+        self.assertEqual(Accounts(fetch=lambda *a: payload).read(self.profile())["values"], [])
+        def fetch(*args):
+            raise GatewayError("model_discovery_auth_error", 400)
+        with self.assertRaisesRegex(GatewayError, "^provider_account_auth_error$"):
+            Accounts(fetch=fetch).read(self.profile())
+
+
 if __name__ == "__main__":
     unittest.main()

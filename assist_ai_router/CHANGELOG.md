@@ -2,7 +2,11 @@
 
 ## 1.0.0
 
-* Switch app versioning to MAJOR.MINOR.PATCH; retain the experimental stage.
+* Prefill the original API credential entry on profile editing through a dedicated ingress-only endpoint; recommend secret references and offer a literal-key reveal control.
+* Add read-only OpenRouter/DeepSeek account metadata, documented plan hints and optional model-specific quota examples.
+* Document concrete alias/tool/catch-all rule examples in German and English.
+
+* Switch app versioning to MAJOR.MINOR.PATCH and mark the app stable.
 * Show providers in numbered vertical lists with drag-and-drop and accessible move buttons, saving order immediately.
 * Keep !secret references visible while typing their prefix; restore password masking on any mismatch.
 * Automatically fetch provider models on editor opening and completed credential changes; show suggestions directly in LLM model with SDK/manual fallback, removing the separate load button and picker.

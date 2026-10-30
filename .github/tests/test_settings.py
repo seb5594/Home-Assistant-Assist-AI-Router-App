@@ -80,6 +80,19 @@ class Configuration(unittest.TestCase):
         self.assertFalse(restored.snapshot()["providers"][0]["enabled"])
         self.assertEqual(restored.snapshot()["rules"], cfg["rules"])
 
+    def test_credential_editor_loads_raw_entry_and_never_resolved_secret(self):
+        result = self.settings.credential("a", self.settings.revision())
+        self.assertEqual(result, {"api_key": "!secret groq_key"})
+        self.assertNotIn("RESOLVED-PRIVATE-KEY", json.dumps(result))
+        self.supervisor.raw["providers"][0]["api_key"] = "ORIGINAL-LITERAL"
+        self.settings.reload()
+        self.assertEqual(self.settings.credential("a", self.settings.revision()), {"api_key": "ORIGINAL-LITERAL"})
+        self.assertNotIn("ORIGINAL-LITERAL", json.dumps(self.settings.view()))
+        with self.assertRaisesRegex(ConfigError, "config_conflict"):
+            self.settings.credential("a", "stale")
+        with self.assertRaisesRegex(ConfigError, "invalid_provider_id"):
+            self.settings.credential("missing", self.settings.revision())
+
     def test_literal_key_is_masked_and_blank_omission_preserves_it(self):
         self.supervisor.raw["providers"][0]["api_key"] = "LITERAL-PRIVATE"
         self.settings.reload()

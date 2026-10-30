@@ -6,7 +6,7 @@
 
 Assist AI Router combines cloud providers and local models behind an authenticated OpenAI-compatible endpoint. The app uses the included **LiteLLM SDK** for model requests and adds its own routing, usage accounting and ingress interface. Manage profiles, keys, models, priorities and limits in your browser. Saving writes to the app configuration and applies changes immediately.
 
-**App v1.0.0 · experimental · LiteLLM 1.106.4 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. The version number does not remove the experimental designation; previous calendar releases remain in the changelog.
+**App v1.0.0 · LiteLLM 1.106.4 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
 
 ## Features
 
@@ -71,15 +71,37 @@ Discovery reads metadata without generating a prompt or changing token counters.
 
 New literal keys work before saving. New `!secret` references must first be saved with a model name so Supervisor can resolve them. Saved keys are not reused for a changed destination until you re-enter the key or explicitly save the changed profile.
 
+### API plans, account data and documented limit examples
+
+The provider editor shows documented plan options and, for supported official endpoints, live account data. Checked **2026-10-30**. Documented plan options do not identify your account. A consumer chat subscription does not automatically include API usage.
+
+| Provider | Documented information | Source |
+| --- | --- | --- |
+| Google AI Studio | Project/model-specific RPM, TPM and RPD; check AI Studio. | [Docs](https://ai.google.dev/gemini-api/docs/rate-limits) |
+| Groq | Free examples for gpt-oss-20b/120b: 30 RPM, 1,000 RPD, 8,000 TPM, 200,000 TPD. Organization limits may differ. | [Docs](https://console.groq.com/docs/rate-limits) |
+| Cerebras | Trial examples gpt-oss-120b/qwen-3.8-27b: 5 RPM, 30,000 uncached TPM, 1,000,000 TPD. Separate hourly/total-token limits apply. Trial credits expire; not a permanent free tier. | [Docs](https://inference-docs.cerebras.ai/support/rate-limits) |
+| OpenRouter | API key metadata can report free-tier status, credit cap and daily free-model requests; no universal token cap. | [Docs](https://openrouter.ai/docs/api_reference/limits) |
+| Mistral / La Plateforme | Organization/model-specific limits; check the Limits page. Consumer subscriptions do not establish API allowance. | [Docs](https://docs.mistral.ai/admin/billing-usage/usage-limits) |
+| Hugging Face Inference | Published monthly credits: Free $0.10 (subject to change), PRO $2, organizations $2/seat. Monetary credits are not fixed tokens or verified remaining balance. | [Docs](https://huggingface.co/docs/inference-providers/pricing) |
+| SambaNova | Check account credits and current plan; the Free plan page asks for purchased credits before API use. No free token allowance assumed. | [Docs](https://cloud.sambanova.ai/plans) |
+| Cohere | Trial: 1,000 API calls/month; selected chat models 20 RPM. Monthly requests are not tokens or daily allowance. | [Docs](https://docs.cohere.com/docs/rate-limits) |
+| Cloudflare Workers AI | 10,000 Neurons/day free allocation; neurons cannot be converted into a universal token allowance. Some models require paid access. | [Docs](https://developers.cloudflare.com/workers-ai/platform/pricing/) |
+| NVIDIA NIM | Developer access is for prototyping. No reliably documented universal token quota is prefilled. | [Docs](https://docs.api.nvidia.com/nim/docs/product) |
+| DeepSeek | The balance endpoint reports available/granted/purchased funds, not a subscription tier or fixed token balance. | [Docs](https://api-docs.deepseek.com/api/get-user-balance/) |
+
+Other templates retain an unknown plan where a normal API key does not expose a supported account endpoint. Keys bound to custom proxy URLs are not forwarded to another host for account checks. No login pages are scraped or probe prompts generated to identify plans.
+
+OpenRouter can return free-tier status, remaining key spending cap and, where supplied, daily free-model requests. DeepSeek reports available, granted and purchased funds. Account metadata is cached for up to five minutes and kept separate from local router counters. Money is never converted to tokens. Local limits and cost permissions never change automatically. Matching Groq/Cerebras models offer **Apply documented limit example**: compare with your actual account, then save. Additional hourly and other unrepresented restrictions remain enforced by the provider.
+
 ## Order, pauses and credentials
 
 Position numbers represent the **saved profile order**, including paused profiles. Drag the ⠿ handle before/after a profile or use the arrow buttons. **Fixed priority** uses this order; other presets may sort differently. Overview also displays profiles vertically.
 
 **Pause** excludes a profile from new model requests. Already running calls may finish. Pauses survive restarts until manually resumed. Credentials, rules, position and usage remain intact; resuming does not clear limits or cooldowns. Editing a paused profile may still fetch its model metadata.
 
-Literal API keys stay masked. An input starting with `!` becomes visible while it follows the `!secret` marker: `!`, `!s`, `!se`, `!sec`, `!secr`, `!secre`, `!secret`, then `!secret name`. A deviation such as `!sx` or `!secretX` immediately restores password masking.
+Literal API keys are initially masked and can be revealed with Show/hide. An input starting with `!` becomes visible while it follows the `!secret` marker: `!`, `!s`, `!se`, `!sec`, `!secr`, `!secre`, `!secret`, then `!secret name`. A deviation such as `!sx` or `!secretX` immediately restores password masking.
 
-`!secret name` references an **existing** Home Assistant secret. The app cannot create entries in HA's secrets file; direct key entry requires no text file. Resolved saved credentials are never returned to the UI. Leave the key field empty when editing to keep its current credential; **Remove saved key** clears it explicitly.
+`!secret name` references an **existing** Home Assistant secret. The app cannot create entries in HA's secrets file; direct key entry requires no text file. Opening a profile fetches its original saved entry through a dedicated ingress endpoint. A `!secret` remains a reference; its resolved value is never returned. Literal keys are initially masked and can be revealed with Show/hide. Secret references are recommended. Leave the key field empty when editing to keep its current credential; **Remove saved key** clears it explicitly.
 
 Web changes are saved through Supervisor to the app options, preserving raw secret references. Changes from HA's **Configuration** tab load when refreshing settings or restarting. Revision checking prevents a stale web view from silently overwriting newer data. Refresh after a conflict and reapply changes; avoid simultaneous editing in multiple interfaces.
 
@@ -103,6 +125,23 @@ Before an attempt, the router checks enabled state, cost permission, tool/image 
 **Examples:** For free-first routing, confirm checked free access on independent accounts, enter limits and use Fixed priority. For local-first routing, add a tool-capable local server and choose Local first. For separate Assist requirements, define an alias such as `assist-home` with a tool condition and suitable profiles.
 
 Attempts and time budgets are bounded. If all allowed providers are exhausted or unavailable, the API returns **HTTP 503 / `no_provider_available`**. A local fallback can improve availability; unlimited cloud answers cannot be guaranteed.
+
+### Concrete rules to recreate in the UI
+
+Assume this global profile order: **1. Local**, **2. Groq**, **3. Gemini**. Start with **Fixed priority** and enter these under **Routing → Custom rules**. Profile names refer to your actual profiles.
+
+| Order | Rule name | Alias | Require tools | Allowed profiles | Result |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Assist with devices | `assist-auto` | Yes | Local, Groq | Requests carrying tools try Local, then Groq. |
+| 2 | Assist text | `assist-auto` | No | Groq, Gemini | Requests without tools try Groq, then Gemini. |
+| 3 | Private local | `assist-private` | No | Local | Local only; unavailable local models do not cause cloud fallback. |
+| 4 | Cloud text | `assist-cloud` | No | Groq, Gemini | A separate selectable model for cloud requests with fallback. |
+
+Require tools = No means **no condition**, not “tools forbidden.” Put the tool rule before the general `assist-auto` rule. The private set prevents cloud fallback. Cost permissions still apply.
+
+An optional **catch-all rule** with alias `*`, no tool condition and Groq/Gemini belongs last. It applies only to already known routing aliases; it does not create arbitrary model names. It cannot expand a set chosen by an earlier matching rule. Direct `provider:` models bypass rules.
+
+Checkbox selection order does not create a separate priority. Groq precedes Gemini because of global order. Other presets can change the starting profile. Rules do not inspect prompt text, schedules or keywords; supported conditions are alias, presence of tools and allowed profile set.
 
 ## Usage and quotas
 
@@ -163,7 +202,7 @@ There are no periodic paid model probes. Status reflects previous tests/requests
 - **Streaming:** Upstream responses are fully buffered, then returned as SSE. There is no live token-by-token output; fallback cannot occur halfway through an already transmitted tool call.
 - **Backups:** Options, router key and SQLite live in `/data`. Include app data in backups; backups may contain credentials.
 - **Networking:** Cloud calls transmit prompts/context to the selected provider. Local servers must be reachable from the app. Use suitable HTTPS access over untrusted networks.
-- **Credentials:** Stored keys are not returned to the UI in plaintext. Model metadata requests send credentials in headers to the configured destination, block redirects and suppress upstream error bodies. LiteLLM telemetry is disabled.
+- **Credentials:** The normal settings response omits keys. Only an opened editor fetches its original entry; resolved secrets are never returned. Model metadata requests send credentials in headers to the configured destination, block redirects and suppress upstream error bodies. LiteLLM telemetry is disabled.
 
 LiteLLM remains pinned to **1.106.4** and its image digest; startup verifies the SDK version. **Version check** queries GitHub only after a click, caches for one hour and installs nothing. A newer upstream release does not automatically replace the reviewed dependency.
 
@@ -185,7 +224,7 @@ LiteLLM remains pinned to **1.106.4** and its image digest; startup verifies the
 
 [Detailed configuration](assist_ai_router/DOCS.en.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.en.md) · [Development and acceptance](CONTRIBUTING.md) · [Changelog](assist_ai_router/CHANGELOG.md) · [More Home Assistant Apps](https://github.com/seb5594/Home-Assistant-Apps)
 
-Automated tests cover routing, secrets, HTTP boundaries, metadata discovery and SDK integration. Real Home Assistant, provider-account, device-action, browser and backup-restore acceptance remains separate. **v1.0.0 is experimental.**
+Automated tests cover routing, secrets, HTTP boundaries, metadata discovery and SDK integration. Real Home Assistant, provider-account, device-action, browser and backup-restore acceptance remains separate.
 
 The footer links this project and other apps, includes **Support my work ☕**, and displays “Application developed by seb5594 (Sebastian Schmidt) - Made with ♥ in Germany” with a red heart.
 

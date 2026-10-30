@@ -147,6 +147,17 @@ class Settings:
                 p["api_key_reference"] = key if key.startswith("!secret ") else ""
             return dict(options=raw, revision=self.revision(), supervisor=bool(self.supervisor))
 
+    def credential(self, provider_id, revision):
+        """Return only the original entry to the ingress editor, never a resolved secret."""
+        with self.lock:
+            self.reload()
+            if revision != self.revision():
+                raise ConfigError("config_conflict")
+            for profile in self.raw["providers"]:
+                if profile["id"] == provider_id:
+                    return {"api_key": profile["api_key"]}
+            raise ConfigError("invalid_provider_id")
+
     def snapshot(self):
         with self.lock:
             return copy.deepcopy(self.resolved)

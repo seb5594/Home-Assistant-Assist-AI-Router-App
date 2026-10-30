@@ -42,12 +42,12 @@ function selectField(key, value, options, label) {
   const wrap = el('label', undefined, 'field'); wrap.append(el('span', label || t(key))); const input = el('select'); input.name = key;
   for (const [v, text] of options) { const option = el('option', text); option.value = v; input.append(option); } input.value = value; wrap.append(input); return {wrap, input};
 }
+function bindApiKeyMaskValue(input) {
+  const value = input.value;
+  input.type = value.startsWith('!') && ('!secret'.startsWith(value) || /^!secret\s/.test(value)) ? 'text' : 'password';
+}
 function bindApiKeyMask(input) {
-  const update = () => {
-    const value = input.value;
-    input.type = value.startsWith('!') && ('!secret'.startsWith(value) || /^!secret\s/.test(value)) ? 'text' : 'password';
-  };
-  input.addEventListener('input', update); update();
+  input.addEventListener('input', () => bindApiKeyMaskValue(input)); bindApiKeyMaskValue(input);
 }
 async function moveProvider(id, targetId, after = false) {
   if (state.saving || id === targetId) return;
@@ -107,7 +107,7 @@ function render() {
   document.documentElement.lang = state.lang; $('#language').value = state.lang;
   $('#page-title').textContent = t(state.page); $('#refresh').ariaLabel = t('refresh');
   $('#sync').textContent = t(state.status.synchronized ? 'synced' : 'local_mode');
-  $('#version').textContent = `${state.status.version} · experimental · LiteLLM ${state.status.litellm}`;
+  $('#version').textContent = `${state.status.version} · LiteLLM ${state.status.litellm}`;
   $('#nav').replaceChildren(...Object.entries(pages).map(([key, icon]) => { const a = el('a', undefined, key === state.page ? 'active' : ''); a.href = `#${key}`; const marker = el('span', icon); marker.ariaHidden = 'true'; a.append(marker, document.createTextNode(t(key))); return a; }));
   const content = $('#content'); content.replaceChildren();
   ({overview: renderOverview, providers: renderProviders, routing: renderRouting, activity: renderActivity, setup: renderSetup, settings: renderSettings})[state.page](content);
@@ -189,10 +189,12 @@ function openEditor(existing, preset) {
   grid.append(field('name', p.name).wrap); const model = field('model', p.model, 'text', t('model_hint')); model.input.required = true; model.input.setAttribute('list', 'model-list'); grid.append(model.wrap);
   const models = el('datalist'); models.id = 'model-list'; grid.append(models);
   const liveStatus = el('small', t('provider_models_auto_hint'), 'full'); liveStatus.setAttribute('role', 'status');
+  let keyEdited = false;
+  let credentialReady = !existing;
   const draftCredentials = () => {
     const draft = {id: p.id, preset: p.preset, api_base: apiBase.input.value.trim()};
     if (clear.input.checked) draft.api_key = '';
-    else if (key.input.value.trim()) draft.api_key = key.input.value.trim();
+    else if ((!existing || keyEdited) && key.input.value.trim()) draft.api_key = key.input.value.trim();
     return draft;
   };
   const fillModels = values => models.replaceChildren(...values.map(value => { const option = el('option'); option.value = value; return option; }));
@@ -205,12 +207,13 @@ function openEditor(existing, preset) {
   let lastDraft = null;
   const refreshModels = async () => {
     const draft = draftCredentials(); const signature = JSON.stringify(draft);
-    if (lastDraft === signature) return;
+    if (!credentialReady || lastDraft === signature) return;
     lastDraft = signature;
     const generation = ++discoveryGeneration;
     const current = () => generation === discoveryGeneration && liveStatus.isConnected && $('#editor').open && JSON.stringify(draftCredentials()) === signature;
     fillModels([]);
     liveStatus.textContent = t('provider_models_loading');
+    guard(() => refreshAccount(draft, current));
     let suggestions = [];
     try { suggestions = await sdkSuggestions(); } catch { /* Manual model entry remains available. */ }
     if (!current()) return;
@@ -233,7 +236,10 @@ function openEditor(existing, preset) {
     discoveryGeneration++; lastDraft = null; fillModels([]);
     liveStatus.textContent = t('provider_models_auto_hint');
   };
-  const key = field('api_key', '', 'password', p.api_key_reference ? `${t('secret_kept')} ${p.api_key_reference}` : t('key_hint')); bindApiKeyMask(key.input); key.input.autocomplete = 'new-password'; key.input.spellcheck = false; key.input.autocapitalize = 'none'; key.input.placeholder = p.api_key_set ? t('keep_key') : '!secret my_ai_key'; grid.append(key.wrap);
+  const key = field('api_key', p.api_key_reference || '', 'password', t('key_hint')); bindApiKeyMask(key.input); key.input.autocomplete = 'new-password'; key.input.spellcheck = false; key.input.autocapitalize = 'none'; key.input.placeholder = p.api_key_set ? t('keep_key') : '!secret my_ai_key'; grid.append(key.wrap);
+  const revealKey = button(t('show_hide'), () => { key.input.type = key.input.type === 'password' ? 'text' : 'password'; });
+  key.wrap.append(revealKey);
+  key.input.addEventListener('input', () => { keyEdited = true; });
   const clear = field('clear_key', false, 'checkbox'); if (existing) grid.append(clear.wrap);
   const apiBase = field('api_base', p.api_base || '', 'text', t('base_hint'));
   grid.append(apiBase.wrap, liveStatus);
@@ -244,6 +250,37 @@ function openEditor(existing, preset) {
   const advanced = el('details'); advanced.append(el('summary', t('advanced_limits'))); const limits = el('div', undefined, 'form-grid');
   for (const k of ['rpm', 'tpm', 'daily_tokens', 'daily_requests', 'monthly_tokens', 'context_tokens', 'input_price', 'output_price', 'monthly_budget']) { const f = field(k, p[k] || 0, 'number'); f.input.min = '0'; f.input.step = k.includes('price') || k === 'monthly_budget' ? '0.000001' : '1'; limits.append(f.wrap); }
   limits.append(field('quota_group', p.quota_group || '', 'text', t('quota_group_hint')).wrap, field('api_version', p.api_version || '').wrap); advanced.append(limits, note(t('limit_hint'))); fields.append(advanced);
+  const account = el('section', undefined, 'account-panel'); account.append(el('h3', t('provider_account')));
+  const accountStatus = el('p', t('provider_account_hint'), 'muted'); accountStatus.setAttribute('role', 'status');
+  const accountValues = el('div'); account.append(accountStatus, accountValues);
+  const info = preset.offer;
+  if (info) {
+    account.append(el('p', `${t('documented_plans')}: ${info.name}`, 'muted'), note(t('offer_' + p.preset)), link(`${t('official_limits')} · ${info.checked} ↗`, info.source));
+    const examples = el('div', undefined, 'actions');
+    const showExample = () => {
+      examples.replaceChildren();
+      const limits = info.limits_by_model[model.input.value.trim()];
+      if (!limits) return;
+      examples.append(button(t('apply_limit_example'), () => {
+        for (const [name, value] of Object.entries(limits)) fields.querySelector(`[name=${name}]`).value = value;
+        const advanced = $('details', fields); advanced.open = true;
+        notice(t('limit_example_applied'));
+      }), el('small', Object.entries(limits).map(([name, value]) => `${t(name)}: ${fmt(value)}`).join(' · ')));
+    };
+    model.input.addEventListener('input', showExample); model.input.addEventListener('change', showExample);
+    showExample(); account.append(examples, note(t('limit_example_warning')));
+  } else account.append(note(t('provider_account_unknown')));
+  fields.append(account);
+  async function refreshAccount(draft, current) {
+    accountValues.replaceChildren(); accountStatus.textContent = t('provider_account_loading');
+    try {
+      const data = await api('provider-account', 'POST', draft);
+      if (!current()) return;
+      accountStatus.textContent = data.status === 'available' ? `${t(data.plan)} · ${new Date(data.checked_at * 1000).toLocaleString(state.lang)}` : t('provider_account_' + data.status);
+      for (const value of data.values) accountValues.append(el('p', `${t('account_' + value.kind)}: ${new Intl.NumberFormat(state.lang, {maximumFractionDigits: 6}).format(value.value)} ${value.unit === 'requests' ? t('requests') : value.unit}`, 'account-value'));
+      if (data.status === 'available') accountValues.append(note(t('account_values_hint')));
+    } catch (error) { if (current()) accountStatus.textContent = t(error.message); }
+  }
   const portal = el('div', undefined, 'actions'); portal.append(link(t('get_key') + ' ↗', preset.setup_url)); fields.append(portal);
   presetField.input.addEventListener('change', () => {
     const chosen = state.catalog.find(x => x.id === presetField.input.value); $('#editor').close(); openEditor(null, chosen);
@@ -255,7 +292,7 @@ function openEditor(existing, preset) {
         if (!input.name || ['api_key', 'clear_key'].includes(input.name)) continue;
         next[input.name] = input.type === 'checkbox' ? input.checked : input.type === 'number' ? Number(input.value) : input.value.trim();
       }
-      if (!existing || key.input.value || clear.input.checked) next.api_key = clear.input.checked ? '' : key.input.value.trim();
+      if (!existing || (keyEdited && key.input.value) || clear.input.checked) next.api_key = clear.input.checked ? '' : key.input.value.trim();
       if (!next.name || !next.model.split('/')[1]) throw new Error('invalid_model');
       const index = c.providers.findIndex(x => x.id === next.id); if (index < 0) c.providers.push(next); else c.providers[index] = next;
       $('#save-provider').disabled = true;
@@ -263,7 +300,15 @@ function openEditor(existing, preset) {
     });
   };
   $('#editor').showModal();
-  guard(refreshModels);
+  if (!existing) guard(refreshModels);
+  else guard(async () => {
+    const revision = state.revision;
+    const data = await api('provider-credential', 'POST', {provider_id: p.id, revision});
+    if (!key.input.isConnected || !$('#editor').open) return;
+    if (!keyEdited && !clear.input.checked) { key.input.value = data.api_key; bindApiKeyMaskValue(key.input); }
+    credentialReady = true;
+    await refreshModels();
+  });
 }
 function renderRouting(root) {
   root.append(el('p', t('routing_intro'), 'muted'));
@@ -328,6 +373,7 @@ function renderSettings(root) {
 }
 async function load() { const [settings, status, catalog] = await Promise.all([api('settings'), api('status'), api('catalog')]); state.cfg = settings.options; state.revision = settings.revision; state.status = status; state.catalog = catalog; state.lang = state.cfg.language; render(); }
 $('#close-editor').onclick = $('#cancel-editor').onclick = () => $('#editor').close();
+$('#editor').addEventListener('close', () => { const key = $('[name=api_key]', $('#provider-fields')); if (key) { key.value = ''; key.type = 'password'; } });
 $('#refresh').onclick = () => guard(load);
 $('#language').onchange = () => guard(async () => { const lang = $('#language').value; const c = cloneCfg(); c.language = lang; await save(c); state.lang = lang; render(); });
 window.addEventListener('hashchange', render);

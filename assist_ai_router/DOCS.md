@@ -1,6 +1,6 @@
 # Assist AI Router — Deutsch
 
-Experimentell · Version **1.0.0** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Version **1.0.0** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
 
 ## In fünf Schritten zu Assist
 
@@ -28,7 +28,7 @@ Die Abfrage startet beim Öffnen des Anbieterfensters oder nach abgeschlossener 
 
 Das Schlüsselfeld zeigt `!`, `!s`, `!se` bis `!secret name` unmaskiert, solange die Eingabe dem Secret-Präfix folgt; bei Abweichungen wird sofort wieder maskiert.
 
-Du kannst einen Schlüssel direkt im Formular eingeben oder einen **bereits vorhandenen** Verweis wie `!secret groq_api_key` verwenden. Der Supervisor löst Secrets auf. Beim späteren Bearbeiten bleibt der Verweis erhalten; der aufgelöste Schlüssel wird nicht an den Browser zurückgegeben. Ein leeres Schlüsselfeld beim Bearbeiten behält den gespeicherten Wert bei. **Gespeicherten Schlüssel entfernen** löscht ihn ausdrücklich. Neue Einträge in Home Assistants `secrets.yaml` kann diese App nicht erstellen. Direkte Formulareingabe erfordert überhaupt keine Textdatei.
+Du kannst einen Schlüssel direkt im Formular eingeben oder einen **bereits vorhandenen** Verweis wie `!secret groq_api_key` verwenden. Der Supervisor löst Secrets auf. Beim späteren Bearbeiten bleibt der Verweis erhalten; der aufgelöste Secret-Wert wird nicht an den Browser zurückgegeben. Beim Öffnen wird der Originaleintrag über einen eigenen Ingress-Endpunkt ins Feld geladen. Direkte Schlüssel lassen sich mit Anzeigen/Verbergen einsehen; Secret-Verweise sind empfohlen. Ein leeres Schlüsselfeld beim Bearbeiten behält den gespeicherten Wert bei. **Gespeicherten Schlüssel entfernen** löscht ihn ausdrücklich. Neue Einträge in Home Assistants `secrets.yaml` kann diese App nicht erstellen. Direkte Formulareingabe erfordert überhaupt keine Textdatei.
 
 Vorlagen decken Google AI Studio, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, GitHub Models, SambaNova, Together AI, Fireworks AI, Cohere, Cloudflare, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Perplexity, Azure, Ollama und eigene OpenAI-kompatible Endpunkte ab. Modellnamen sind bearbeitbare Beispiele. SDK-Vorschläge aus dem Katalog der gepinnten LiteLLM-Version ergänzen das Modellfeld, wenn die direkte Abfrage nicht verfügbar ist; dieser Katalog bestätigt keine Verfügbarkeit in deinem Konto. Nicht alle Vorlagen sind gratis. Bei einigen Anbietern sind Konto-ID, Deployment-URL oder API-Version zusätzlich nötig.
 
@@ -69,7 +69,7 @@ Die Verwaltung lauscht auf Ingress-Port 8099 und akzeptiert im Produktivbetrieb 
 
 SQLite, Konfiguration und Router-Schlüssel liegen in `/data` und gehören in dein App-Backup. Backups können Zugangsdaten enthalten. Das Image basiert auf dem exakten offiziellen LiteLLM-Release-Tag mit dessen eingefrorenen Abhängigkeiten; die App prüft die installierte SDK-Version beim Start. Das vollständige Upstream-Image ist entsprechend größer als eine reine SDK-Installation. Keine Telemetrie, keine automatischen kostenpflichtigen Healthchecks, kein Redis/Postgres erforderlich.
 
-**Auf neue stabile Version prüfen** fragt GitHub erst nach Klick ab und cached das Ergebnis eine Stunde. Die App installiert dabei nichts. Upgrades erhalten eine neue getestete App-Version. Ab v1.0.0 gilt semantische Versionierung (`MAJOR.MINOR.PATCH`) statt der bisherigen Datums-Versionen. Der Status bleibt **experimental**.
+**Auf neue stabile Version prüfen** fragt GitHub erst nach Klick ab und cached das Ergebnis eine Stunde. Die App installiert dabei nichts. Upgrades erhalten eine neue getestete App-Version. Ab v1.0.0 gilt semantische Versionierung (`MAJOR.MINOR.PATCH`) statt der bisherigen Datums-Versionen.
 
 Wenn alle erlaubten Anbieter erschöpft oder ausgefallen sind, antwortet der Router mit HTTP 503 und `no_provider_available`. Unbegrenzte Cloud-Antworten sind damit nicht garantiert. Für die höchste Verfügbarkeit ergänze ein lokal laufendes, Assist-taugliches Modell.
 
@@ -84,3 +84,7 @@ Die Softwaretests ersetzen keinen Praxistest auf Home Assistant OS: amd64/aarch6
 * [Supervisor-App-API](https://contributors.home-assistant.io/apps/supervisor-api/apps/)
 * [LiteLLM-Routing](https://docs.litellm.ai/docs/routing)
 * [Gepinntes LiteLLM-Release](https://github.com/BerriAI/litellm/releases/tag/v1.106.4)
+
+## API-Tarife und Regelbeispiele
+
+Die [deutsche README](../README.md) enthält konkrete Alias-/Tool-/Auffangregeln sowie eine datierte Tabelle offizieller Tarif-/Limitquellen. Die Anbieteransicht unterscheidet dokumentierte Beispiele von OpenRouter-/DeepSeek-Kontodaten. Geldbeträge sind keine Tokenlimits; unbekannte Werte bleiben unbekannt. Beispiel-Limits werden nur per Klick ins Formular übernommen.

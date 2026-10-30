@@ -1,6 +1,6 @@
 # Assist AI Router — English
 
-Experimental · **1.0.0** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Version **1.0.0** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
 
 ## Quick start
 
@@ -20,7 +20,7 @@ Saving in ingress writes the same app options as the Home Assistant Configuratio
 
 The key field shows `!`, `!s`, `!se` through `!secret name` without masking while the value follows the secret prefix; any deviation restores password masking.
 
-Enter keys directly in the form or reference an existing Home Assistant secret using `!secret name`. Supervisor resolves references; edits preserve the raw reference. Resolved keys are never returned to the UI. Leave the key field blank while editing to preserve it; use **Remove saved key** to clear it. This app cannot create new entries in HA's secrets file. Direct form entry requires no text files.
+Enter keys directly in the form or reference an existing Home Assistant secret using `!secret name`. Supervisor resolves references; edits preserve the raw reference. Resolved secret values are never returned. Opening fetches the original entry through a dedicated ingress endpoint; literal keys can be revealed with Show/hide. Secret references are recommended. Leave the key field blank while editing to preserve it; use **Remove saved key** to clear it. This app cannot create new entries in HA's secrets file. Direct form entry requires no text files.
 
 ### Load models directly from a provider
 
@@ -67,10 +67,14 @@ Ingress administration listens on 8099 and accepts only Supervisor's ingress pee
 
 SQLite, options and the generated router key live in `/data`; include them in app backups. Backups may contain credentials. The image uses the exact official LiteLLM release tag with upstream's frozen dependencies; startup verifies the SDK version. The full upstream image is larger than an SDK-only install. Telemetry is disabled. No periodic paid health checks, Redis or PostgreSQL are required.
 
-The stable version check contacts GitHub only after a click, caches for one hour, and installs nothing. Updates ship in reviewed app releases. Starting with v1.0.0, semantic versions (`MAJOR.MINOR.PATCH`) replace calendar versions. The app remains experimental.
+The stable version check contacts GitHub only after a click, caches for one hour, and installs nothing. Updates ship in reviewed app releases. Starting with v1.0.0, semantic versions (`MAJOR.MINOR.PATCH`) replace calendar versions.
 
 If all allowed providers are exhausted/unavailable and no local fallback is available, the API returns HTTP 503 with `no_provider_available`. Unlimited cloud answers cannot be guaranteed.
 
 Before a stable release, test installation on real HA OS amd64/aarch64, protection mode/ingress, secret persistence/restart, the native LiteLLM setup and Assist tool calls, real multi-provider 429/Retry-After behavior and backup restore. Software tests do not replace these acceptance checks. Record visual browser verification separately.
 
 References: [native LiteLLM integration](https://www.home-assistant.io/integrations/litellm/), [app options/secrets](https://contributors.home-assistant.io/apps/guides/options/), [Supervisor app API](https://contributors.home-assistant.io/apps/supervisor-api/apps/), [LiteLLM routing](https://docs.litellm.ai/docs/routing), [pinned release](https://github.com/BerriAI/litellm/releases/tag/v1.106.4).
+
+## API plans and rule examples
+
+The [English README](../README.en.md) contains concrete alias/tool/catch-all rules and a dated table of official plan/limit sources. The editor distinguishes documentation examples from OpenRouter/DeepSeek account data. Currency balances are not token limits; unknown values stay unknown. Example limits only populate the form after a click.
