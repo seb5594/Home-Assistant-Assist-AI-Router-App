@@ -1,6 +1,6 @@
 # Assist AI Router — Deutsch
 
-Version **1.0.1** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Version **1.0.2** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
 
 ## In fünf Schritten zu Assist
 
@@ -20,7 +20,7 @@ Die Ingress-Oberfläche ist der komfortable Editor. **Speichern** schreibt über
 
 ### Modelle direkt beim Anbieter laden
 
-Trage im Anbieterformular den API-Schlüssel und bei Bedarf die API-Basis-URL ein. Beim Öffnen mit gespeicherten Zugangsdaten wird die Modellliste automatisch geladen; neue Schlüssel-/URL-Eingaben aktualisieren sie beim Verlassen des Feldes. Die Vorschläge stehen direkt im Feld **LLM-Modell**, ohne separaten Ladebutton oder zweite Auswahl. Den bisherigen Namen löschen oder tippen, um andere Modelle zu sehen. Der LiteLLM-Präfix wird automatisch ergänzt; du brauchst vorher noch keinen Modellnamen. Neue direkt eingegebene Schlüssel funktionieren bereits vor dem Speichern, ohne das Profil oder den Schlüssel dabei zu speichern. Bereits gespeicherte Schlüssel und `!secret`-Verweise werden serverseitig verwendet. Ein **neuer** `!secret`-Verweis muss zuerst im Profil gespeichert werden; dafür kannst du zunächst einen SDK-Vorschlag als Modell verwenden. Beim Wechsel des Anbieters oder API-Ziels muss ein gespeicherter Schlüssel neu eingegeben oder das geänderte Profil ausdrücklich gespeichert werden.
+Trage im Anbieterformular den API-Schlüssel und bei Bedarf die API-Basis-URL ein. Beim Öffnen mit gespeicherten Zugangsdaten wird die Modellliste automatisch geladen; neue Schlüssel-/URL-Eingaben aktualisieren sie beim Verlassen des Feldes. Die Vorschläge stehen direkt im Feld **LLM-Modell**, ohne separaten Ladebutton oder zweite Auswahl. Mit ▾ alle Modelle öffnen oder im Feld suchen. Der LiteLLM-Präfix wird automatisch ergänzt; du brauchst vorher noch keinen Modellnamen. Neue direkt eingegebene Schlüssel funktionieren bereits vor dem Speichern, ohne das Profil oder den Schlüssel dabei zu speichern. Bereits gespeicherte Schlüssel und `!secret`-Verweise werden serverseitig verwendet. Ein **neuer** `!secret`-Verweis muss zuerst im Profil gespeichert werden; dafür kannst du zunächst einen SDK-Vorschlag als Modell verwenden. Beim Wechsel des Anbieters oder API-Ziels muss ein gespeicherter Schlüssel neu eingegeben oder das geänderte Profil ausdrücklich gespeichert werden.
 
 Direkte Adapter sind für Gemini, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, SambaNova, Together AI, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Cohere, Ollama und eigene OpenAI-kompatible Modelllisten vorhanden. Ohne passenden Listen-Endpunkt, etwa für Azure-Deployments oder kontospezifische Cloudflare-Konfigurationen, bleiben **SDK-Modellvorschläge** und manuelle Eingabe verfügbar. Anbieterantworten werden als solche gekennzeichnet; eine Modellliste bestätigt weder kostenlose Nutzung noch individuelle Freigabe oder Tool-Unterstützung. Einige APIs liefern auch andere Modellarten als Chatmodelle. Gemini/Cohere werden auf bekannte Chat-Funktionen gefiltert. Größere paginierte Antworten werden begrenzt und gegebenenfalls als Teilliste markiert.
 

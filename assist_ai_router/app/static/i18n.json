@@ -228,7 +228,7 @@
     "move_down": "Nach unten verschieben",
     "provider_order_saved": "Reihenfolge gespeichert.",
     "provider_order_hint": "Von oben nach unten, nummeriert nach deiner gespeicherten Reihenfolge. Am Griff ⠿ ziehen und vor oder nach einem Profil ablegen, oder mit ↑/↓ verschieben. Änderungen werden sofort gespeichert. „Feste Priorität“ verwendet diese Reihenfolge; andere Routing-Presets können sie umsortieren. Pausierte Profile behalten ihren Platz.",
-    "provider_models_auto_hint": "Modelle werden beim Öffnen mit gespeicherten Zugangsdaten automatisch geladen. Nach neuer Schlüssel-/URL-Eingabe das Feld verlassen. Zum Auswählen im LLM-Modell-Feld tippen oder den bisherigen Modellnamen löschen.",
+    "provider_models_auto_hint": "Modelle werden automatisch geladen. Mit ▾ alle geladenen Modelle öffnen oder im Modellfeld suchen. Nach neuer Schlüssel-/URL-Eingabe das Feld verlassen.",
     "models_fallback_hint": "SDK-Vorschläge stehen, soweit vorhanden, im LLM-Modell-Feld bereit; manuelle Eingabe ist weiterhin möglich.",
     "provider_account": "💳 API-Tarif und Kontingente",
     "provider_account_hint": "Kontoinformationen werden mit den Zugangsdaten geladen, soweit der Anbieter eine passende API anbietet.",
@@ -267,7 +267,9 @@
     "offer_nvidia_nim": "Developer-Zugang dient dem Prototyping. Kein zuverlässig dokumentiertes universelles Tokenkontingent wird voreingetragen.",
     "offer_sambanova": "Credits und aktuellen Tarif im Konto prüfen. Die Free-Tarifseite verlangt gekaufte Credits vor API-Nutzung; kein Gratis-Tokenbudget angenommen.",
     "offer_deepseek": "Der Guthabenendpunkt zeigt verfügbare, gewährte und gekaufte Geldbeträge, keinen Abotarif oder festen Tokenbestand.",
-    "requests": "Anfragen"
+    "requests": "Anfragen",
+    "show_all_models": "Alle geladenen Modelle anzeigen",
+    "no_model_matches": "Kein passendes geladenes Modell. Manuelle Eingabe ist möglich."
   },
   "en": {
     "overview": "Overview",
@@ -498,7 +500,7 @@
     "move_down": "Move down",
     "provider_order_saved": "Provider order saved.",
     "provider_order_hint": "Top to bottom, numbered by your saved order. Drag the ⠿ handle and drop before or after a profile, or move it with ↑/↓. Changes save immediately. Fixed priority uses this order; other routing presets may sort differently. Paused profiles keep their position.",
-    "provider_models_auto_hint": "Models load automatically when opening with saved credentials. After entering a new key/URL, leave the field. Type in the LLM model field or clear its current model name to choose another model.",
+    "provider_models_auto_hint": "Models load automatically. Open ▾ to see all loaded models, or type to search. After entering a new key/URL, leave that field.",
     "models_fallback_hint": "SDK suggestions are available in the LLM model field where provided; manual entry remains available.",
     "provider_account": "💳 API plan and allowances",
     "provider_account_hint": "Account information loads using credentials where the provider offers a suitable API.",
@@ -537,6 +539,8 @@
     "offer_nvidia_nim": "Developer access is for prototyping. No reliably documented universal token quota is prefilled.",
     "offer_sambanova": "Check account credits and current plan; the Free plan page asks for purchased credits before API use. No free token allowance assumed.",
     "offer_deepseek": "The balance endpoint reports available/granted/purchased funds, not a subscription tier or fixed token balance.",
-    "requests": "requests"
+    "requests": "requests",
+    "show_all_models": "Show all loaded models",
+    "no_model_matches": "No matching loaded model. Manual entry remains available."
   }
 }

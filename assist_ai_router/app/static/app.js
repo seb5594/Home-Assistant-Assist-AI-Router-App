@@ -179,6 +179,43 @@ function renderProviders(root) {
   function fill() { grid.replaceChildren(); state.catalog.filter(p => p.name.toLowerCase().includes(search.value.toLowerCase())).forEach(p => { const b = button(`${providerIcon(p.id)} ${p.name} +`, () => openEditor(null, p)); b.append(el('small', p.local ? t('local_provider') : t('check_free_tier'))); grid.append(b); }); }
   search.addEventListener('input', fill); fill(); root.append(grid);
 }
+function modelPicker(input) {
+  const wrap = el('div', undefined, 'model-picker');
+  const list = el('div', undefined, 'model-options'); list.id = 'model-options'; list.hidden = true; list.setAttribute('role', 'listbox');
+  input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list'); input.setAttribute('aria-controls', list.id); input.setAttribute('aria-expanded', 'false'); input.autocomplete = 'off';
+  let values = [], visible = [], active = -1;
+  const hide = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); toggle.setAttribute('aria-expanded', 'false'); };
+  const choose = value => { input.value = value; hide(); input.dispatchEvent(new Event('input', {bubbles: true})); input.dispatchEvent(new Event('change', {bubbles: true})); input.focus(); hide(); };
+  const mark = () => {
+    [...list.children].forEach((row, index) => { row.setAttribute('aria-selected', String(index === active)); });
+    if (active >= 0) { input.setAttribute('aria-activedescendant', `model-option-${active}`); list.children[active]?.scrollIntoView?.({block: 'nearest'}); }
+  };
+  const show = (all = false) => {
+    const query = all ? '' : input.value.toLowerCase();
+    visible = values.filter(value => value.toLowerCase().includes(query)); active = -1;
+    list.replaceChildren(...visible.map((value, index) => {
+      const row = el('div', value, 'model-option'); row.id = `model-option-${index}`; row.setAttribute('role', 'option'); row.setAttribute('aria-selected', 'false');
+      row.addEventListener('mousedown', event => event.preventDefault());
+      row.addEventListener('click', () => choose(value)); return row;
+    }));
+    if (!visible.length) list.append(el('div', t('no_model_matches'), 'muted'));
+    list.hidden = false; input.setAttribute('aria-expanded', 'true'); toggle.setAttribute('aria-expanded', 'true');
+  };
+  const toggle = button('▾', () => { if (list.hidden) { input.focus(); show(true); } else hide(); }, 'model-toggle');
+  toggle.ariaLabel = t('show_all_models'); toggle.title = t('show_all_models'); toggle.setAttribute('aria-controls', list.id); toggle.disabled = true;
+  input.addEventListener('focus', () => { if (values.length) show(true); });
+  input.addEventListener('input', () => { if (values.length) show(); });
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !list.hidden) { event.preventDefault(); event.stopPropagation(); hide(); }
+    else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault(); if (list.hidden) show(true);
+      if (visible.length) { active = active < 0 ? (event.key === 'ArrowDown' ? 0 : visible.length - 1) : (active + (event.key === 'ArrowDown' ? 1 : visible.length - 1)) % visible.length; mark(); }
+    } else if (event.key === 'Enter' && !list.hidden && active >= 0) { event.preventDefault(); choose(visible[active]); }
+  });
+  wrap.addEventListener('focusout', event => { if (!wrap.contains(event.relatedTarget)) hide(); });
+  wrap.append(input, toggle, list);
+  return {wrap, setValues(next) { values = [...new Set(next)]; toggle.disabled = !values.length; hide(); }};
+}
 function openEditor(existing, preset) {
   preset = preset || state.catalog.find(c => c.id === existing?.preset) || state.catalog[0];
   const newId = `p_${Array.from(crypto.getRandomValues(new Uint8Array(6)), x => x.toString(16).padStart(2, '0')).join('')}`;
@@ -186,8 +223,7 @@ function openEditor(existing, preset) {
   const fields = $('#provider-fields'); fields.replaceChildren(); $('#editor-title').textContent = t(existing ? 'edit_provider' : 'add_provider');
   $('#cancel-editor').textContent = t('cancel'); $('#save-provider').textContent = t('save'); $('#close-editor').ariaLabel = t('close');
   const grid = el('div', undefined, 'form-grid'); const presetField = selectField('preset', p.preset, state.catalog.map(c => [c.id, c.name])); presetField.input.disabled = Boolean(existing); grid.append(presetField.wrap);
-  grid.append(field('name', p.name).wrap); const model = field('model', p.model, 'text', t('model_hint')); model.input.required = true; model.input.setAttribute('list', 'model-list'); grid.append(model.wrap);
-  const models = el('datalist'); models.id = 'model-list'; grid.append(models);
+  grid.append(field('name', p.name).wrap); const model = field('model', p.model, 'text', t('model_hint')); model.input.required = true; const picker = modelPicker(model.input); model.wrap.append(picker.wrap); grid.append(model.wrap);
   const liveStatus = el('small', t('provider_models_auto_hint'), 'full'); liveStatus.setAttribute('role', 'status');
   let keyEdited = false;
   const draftCredentials = () => {
@@ -196,7 +232,7 @@ function openEditor(existing, preset) {
     else if ((!existing || keyEdited) && key.input.value.trim()) draft.api_key = key.input.value.trim();
     return draft;
   };
-  const fillModels = values => models.replaceChildren(...values.map(value => { const option = el('option'); option.value = value; return option; }));
+  const fillModels = values => picker.setValues(values);
   const sdkSuggestions = async () => {
     if (!Object.keys(state.models).length) state.models = await api('models');
     const prefix = preset.prefix;

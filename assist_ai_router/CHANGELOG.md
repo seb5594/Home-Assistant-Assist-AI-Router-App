@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+* Replace the browser-native model datalist with an explicit searchable dropdown attached to the same model input. Opening the dropdown shows all loaded models without deleting the saved model name; supports mouse and keyboard selection.
+
 ## 1.0.1
 
 * Fix automatic provider-model discovery being blocked by failed or slow credential prefill and SDK model catalog requests. Keep saved credentials server-resolved and prevent late SDK suggestions from replacing live results.

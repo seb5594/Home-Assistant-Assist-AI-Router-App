@@ -1,6 +1,6 @@
 # Assist AI Router — English
 
-Version **1.0.1** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Version **1.0.2** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
 
 ## Quick start
 
@@ -24,7 +24,7 @@ Enter keys directly in the form or reference an existing Home Assistant secret u
 
 ### Load models directly from a provider
 
-Enter the API key and custom API base URL if needed, then leave the edited field. Models load automatically on opening with saved credentials and after completed credential edits, directly as suggestions inside **LLM model** without a separate load button or second picker. Clear/type in the field to choose another model; the LiteLLM prefix is added automatically, so no model name is required beforehand. A new literal key works before saving without persisting the profile/key. Saved keys and secret references are resolved on the server. A **new** `!secret` reference needs to be saved in a profile first, using an SDK suggestion as the initial model if needed. Changing the provider or API destination requires re-entering a saved key or explicitly saving the changed profile.
+Enter the API key and custom API base URL if needed, then leave the edited field. Models load automatically on opening with saved credentials and after completed credential edits, directly as suggestions inside **LLM model** without a separate load button or second picker. Open ▾ or type in the field to choose another model; the LiteLLM prefix is added automatically, so no model name is required beforehand. A new literal key works before saving without persisting the profile/key. Saved keys and secret references are resolved on the server. A **new** `!secret` reference needs to be saved in a profile first, using an SDK suggestion as the initial model if needed. Changing the provider or API destination requires re-entering a saved key or explicitly saving the changed profile.
 
 Direct adapters cover Gemini, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, SambaNova, Together AI, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Cohere, Ollama and custom OpenAI-compatible model endpoints. Other providers or account-specific deployment APIs can use SDK suggestions/manual entry. Provider responses do not guarantee free pricing, individual account permission or tool support. Some APIs list non-chat models; Gemini/Cohere use known chat filters. Pagination, response sizes and processing time are bounded, and partial lists are labeled.
 

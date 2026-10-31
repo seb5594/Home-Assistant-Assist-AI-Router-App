@@ -6,7 +6,7 @@
 
 Assist AI Router combines cloud providers and local models behind an authenticated OpenAI-compatible endpoint. The app uses the included **LiteLLM SDK** for model requests and adds its own routing, usage accounting and ingress interface. Manage profiles, keys, models, priorities and limits in your browser. Saving writes to the app configuration and applies changes immediately.
 
-**App v1.0.1 · LiteLLM 1.106.4 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
+**App v1.0.2 · LiteLLM 1.106.4 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
 
 ## Features
 
@@ -65,7 +65,7 @@ These **21 templates** do not guarantee free access. Account permissions, model 
 
 Opening a provider editor automatically loads its model list using saved credentials. After entering a new key or API URL, leaving that field triggers an update. Public model endpoints and local servers may work without a key. There is no separate load button or second model picker.
 
-Results appear as suggestions **inside the LLM model field**. Type a matching part of the name or clear the current model to see other suggestions; presentation depends on your browser. LiteLLM prefixes are added automatically. The existing value is not silently replaced, and manual names remain supported.
+Results appear as suggestions **inside the LLM model field**. Use ▾ beside the model input to open all loaded models, even with an existing saved name. Typing filters the list; ↑/↓ and Enter select an entry. Escape closes the list. LiteLLM prefixes are added automatically. The existing value is not silently replaced, and manual names remain supported.
 
 Discovery reads metadata without generating a prompt or changing token counters. Providers may rate-limit metadata requests. Pagination, response size and time are bounded; partial lists are labeled. If discovery fails, available SDK suggestions and manual entry remain. A listed model does not guarantee free pricing, account access or chat/tool support.
 

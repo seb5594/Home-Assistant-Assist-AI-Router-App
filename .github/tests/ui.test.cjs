@@ -92,19 +92,25 @@ function editorUi(handlers) {
     prepend(...items) { this.children.unshift(...items); }
     replaceChildren(...items) { this.children = items; }
     setAttribute(name, value) { this[name] = value; }
+    removeAttribute(name) { delete this[name]; }
+    contains(item) { return item === this || this.children.some(child => child.contains?.(item)); }
+    focus() {}
+    dispatchEvent(event) { for (const fn of this.listeners[event.type] || []) fn(event); }
     addEventListener(name, fn) { (this.listeners[name] ||= []).push(fn); }
     showModal() { this.open = true; }
   }
   const nodes = Object.fromEntries(['provider-fields','editor-title','cancel-editor','save-provider','close-editor','provider-form','editor','notice'].map(id => ['#'+id,new Element('div')]));
   const document = {createElement: tag => new Element(tag), createTextNode: text => text, querySelector: q => nodes[q]};
-  const context = vm.createContext({structuredClone, Intl, document, crypto: {getRandomValues: a => a}, calls: [], handlers});
+  const context = vm.createContext({structuredClone, Intl, document, crypto: {getRandomValues: a => a}, Event, calls: [], handlers});
   vm.runInContext(source.slice(0, source.indexOf("$('#close-editor').onclick")) + `
     api = async (route, method, body) => { calls.push({route, body}); return handlers[route] ? handlers[route](body) : {}; };
     state.catalog = [{id:'groq',name:'Groq',prefix:'groq'}];
     globalThis.open = () => openEditor({id:'a',name:'Saved',preset:'groq',model:'groq/previous',api_key_set:true,api_base:''});
   `, context);
   const walk = e => [e, ...(e.children || []).flatMap(walk)];
-  return {context, nodes, options: () => walk(nodes['#provider-fields']).find(e => e.id === 'model-list').children.map(e => e.value)};
+  const all = () => walk(nodes['#provider-fields']);
+  const toggle = () => all().find(e => e.className === 'model-toggle').listeners.click[0]();
+  return {context, nodes, all, toggle, options: () => { toggle(); const list = all().find(e => e.id === 'model-options'); const result = list.children.filter(e => e.role === 'option').map(e => e.textContent); toggle(); return result; }};
 }
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
@@ -131,4 +137,36 @@ test('slow credential prefill and SDK catalog cannot block live provider results
   assert.deepEqual(Array.from(page.options()), ['groq/live']);
   sdkResolve({groq:['stale-sdk']}); await flush();
   assert.deepEqual(Array.from(page.options()), ['groq/live']);
+});
+
+
+test('editing keeps the saved model while the dropdown exposes and selects other provider models', async () => {
+  const page = editorUi({
+    'provider-credential': () => ({api_key:'original'}),
+    models: () => ({groq:[]}),
+    'provider-models': () => ({models:['groq/other-a','groq/other-b'],complete:true})
+  });
+  page.context.open(); await flush(); await flush();
+  const input = page.all().find(e => e.name === 'model');
+  assert.equal(input.value, 'groq/previous');
+  assert.deepEqual(Array.from(page.options()), ['groq/other-a','groq/other-b']);
+  page.toggle();
+  const option = page.all().find(e => e.textContent === 'groq/other-b' && e.role === 'option');
+  option.listeners.click[0]();
+  assert.equal(input.value, 'groq/other-b');
+  assert.equal(page.all().find(e => e.id === 'model-options').hidden, true);
+});
+
+
+test('model dropdown supports keyboard navigation and Escape', async () => {
+  const page = editorUi({'provider-models': () => ({models:['groq/a','groq/b'],complete:true}), models: () => ({groq:[]})});
+  page.context.open(); await flush(); await flush();
+  const input = page.all().find(e => e.name === 'model');
+  const key = name => input.listeners.keydown[0]({key:name,preventDefault(){},stopPropagation(){}});
+  key('ArrowUp'); key('Enter');
+  assert.equal(input.value,'groq/b');
+  key('ArrowDown'); key('Enter');
+  assert.equal(input.value,'groq/a');
+  page.toggle(); key('Escape');
+  assert.equal(page.all().find(e => e.id === 'model-options').hidden,true);
 });
