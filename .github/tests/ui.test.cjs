@@ -83,3 +83,52 @@ test('sorting is ignored while another settings save is in progress', async () =
   await context.subject.moveProvider('c','a');
   assert.equal(writes.length,0);
 });
+
+
+function editorUi(handlers) {
+  class Element {
+    constructor(tag) { this.tagName = tag; this.children = []; this.listeners = {}; this.isConnected = true; this.value = ''; }
+    append(...items) { this.children.push(...items); }
+    prepend(...items) { this.children.unshift(...items); }
+    replaceChildren(...items) { this.children = items; }
+    setAttribute(name, value) { this[name] = value; }
+    addEventListener(name, fn) { (this.listeners[name] ||= []).push(fn); }
+    showModal() { this.open = true; }
+  }
+  const nodes = Object.fromEntries(['provider-fields','editor-title','cancel-editor','save-provider','close-editor','provider-form','editor','notice'].map(id => ['#'+id,new Element('div')]));
+  const document = {createElement: tag => new Element(tag), createTextNode: text => text, querySelector: q => nodes[q]};
+  const context = vm.createContext({structuredClone, Intl, document, crypto: {getRandomValues: a => a}, calls: [], handlers});
+  vm.runInContext(source.slice(0, source.indexOf("$('#close-editor').onclick")) + `
+    api = async (route, method, body) => { calls.push({route, body}); return handlers[route] ? handlers[route](body) : {}; };
+    state.catalog = [{id:'groq',name:'Groq',prefix:'groq'}];
+    globalThis.open = () => openEditor({id:'a',name:'Saved',preset:'groq',model:'groq/previous',api_key_set:true,api_base:''});
+  `, context);
+  const walk = e => [e, ...(e.children || []).flatMap(walk)];
+  return {context, nodes, options: () => walk(nodes['#provider-fields']).find(e => e.id === 'model-list').children.map(e => e.value)};
+}
+const flush = () => new Promise(resolve => setImmediate(resolve));
+
+test('saved-provider discovery works even if original-credential prefill fails', async () => {
+  const page = editorUi({
+    'provider-credential': () => { throw Error('supervisor_unavailable'); },
+    models: () => ({groq:['sdk-fallback']}),
+    'provider-models': () => ({models:['groq/live'],complete:true})
+  });
+  page.context.open(); await flush(); await flush();
+  assert.deepEqual(Array.from(page.options()), ['groq/live']);
+  assert(page.context.calls.some(c => c.route === 'provider-models'));
+  assert(page.context.calls.filter(c => c.route === 'provider-models').every(c => !('api_key' in c.body)));
+});
+
+test('slow credential prefill and SDK catalog cannot block live provider results', async () => {
+  let sdkResolve;
+  const page = editorUi({
+    'provider-credential': () => new Promise(() => {}),
+    models: () => new Promise(resolve => { sdkResolve = resolve; }),
+    'provider-models': () => ({models:['groq/live'],complete:true})
+  });
+  page.context.open(); await flush(); await flush();
+  assert.deepEqual(Array.from(page.options()), ['groq/live']);
+  sdkResolve({groq:['stale-sdk']}); await flush();
+  assert.deepEqual(Array.from(page.options()), ['groq/live']);
+});

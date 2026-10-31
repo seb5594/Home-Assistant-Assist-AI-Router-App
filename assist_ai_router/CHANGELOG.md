@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+* Fix automatic provider-model discovery being blocked by failed or slow credential prefill and SDK model catalog requests. Keep saved credentials server-resolved and prevent late SDK suggestions from replacing live results.
+* Remove the forum-post draft from the repository.
+
 ## 1.0.0
 
 * Prefill the original API credential entry on profile editing through a dedicated ingress-only endpoint; recommend secret references and offer a literal-key reveal control.

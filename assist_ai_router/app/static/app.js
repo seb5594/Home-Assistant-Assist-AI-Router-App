@@ -190,7 +190,6 @@ function openEditor(existing, preset) {
   const models = el('datalist'); models.id = 'model-list'; grid.append(models);
   const liveStatus = el('small', t('provider_models_auto_hint'), 'full'); liveStatus.setAttribute('role', 'status');
   let keyEdited = false;
-  let credentialReady = !existing;
   const draftCredentials = () => {
     const draft = {id: p.id, preset: p.preset, api_base: apiBase.input.value.trim()};
     if (clear.input.checked) draft.api_key = '';
@@ -207,17 +206,18 @@ function openEditor(existing, preset) {
   let lastDraft = null;
   const refreshModels = async () => {
     const draft = draftCredentials(); const signature = JSON.stringify(draft);
-    if (!credentialReady || lastDraft === signature) return;
+    if (lastDraft === signature) return;
     lastDraft = signature;
     const generation = ++discoveryGeneration;
     const current = () => generation === discoveryGeneration && liveStatus.isConnected && $('#editor').open && JSON.stringify(draftCredentials()) === signature;
     fillModels([]);
     liveStatus.textContent = t('provider_models_loading');
     guard(() => refreshAccount(draft, current));
-    let suggestions = [];
-    try { suggestions = await sdkSuggestions(); } catch { /* Manual model entry remains available. */ }
-    if (!current()) return;
-    fillModels(suggestions);
+    let providerLoaded = false;
+    // The SDK catalog is a fallback, never a prerequisite for live discovery.
+    sdkSuggestions().then(suggestions => {
+      if (current() && !providerLoaded) fillModels(suggestions);
+    }).catch(() => { /* Manual entry and live discovery remain available. */ });
     const anonymous = ['openrouter', 'huggingface', 'nvidia_nim', 'openai_compatible', 'ollama_chat'].includes(p.preset);
     if (!(draft.api_key || (p.api_key_set && !clear.input.checked) || anonymous)) {
       liveStatus.textContent = t('provider_models_auto_hint'); return;
@@ -225,6 +225,7 @@ function openEditor(existing, preset) {
     try {
       const data = await api('provider-models', 'POST', draft);
       if (!current()) return;
+      providerLoaded = true;
       fillModels(data.models);
       liveStatus.textContent = `${fmt(data.models.length)} ${t(data.complete ? 'provider_models_loaded' : 'provider_models_partial')}`;
     } catch (error) {
@@ -300,14 +301,12 @@ function openEditor(existing, preset) {
     });
   };
   $('#editor').showModal();
-  if (!existing) guard(refreshModels);
-  else guard(async () => {
+  guard(refreshModels);
+  if (existing) guard(async () => {
     const revision = state.revision;
     const data = await api('provider-credential', 'POST', {provider_id: p.id, revision});
     if (!key.input.isConnected || !$('#editor').open) return;
     if (!keyEdited && !clear.input.checked) { key.input.value = data.api_key; bindApiKeyMaskValue(key.input); }
-    credentialReady = true;
-    await refreshModels();
   });
 }
 function renderRouting(root) {
