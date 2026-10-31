@@ -1,6 +1,6 @@
 # Assist AI Router — Deutsch
 
-Version **1.0.2** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Version **1.0.3** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
 
 ## In fünf Schritten zu Assist
 
@@ -28,7 +28,7 @@ Die Abfrage startet beim Öffnen des Anbieterfensters oder nach abgeschlossener 
 
 Das Schlüsselfeld zeigt `!`, `!s`, `!se` bis `!secret name` unmaskiert, solange die Eingabe dem Secret-Präfix folgt; bei Abweichungen wird sofort wieder maskiert.
 
-Du kannst einen Schlüssel direkt im Formular eingeben oder einen **bereits vorhandenen** Verweis wie `!secret groq_api_key` verwenden. Der Supervisor löst Secrets auf. Beim späteren Bearbeiten bleibt der Verweis erhalten; der aufgelöste Secret-Wert wird nicht an den Browser zurückgegeben. Beim Öffnen wird der Originaleintrag über einen eigenen Ingress-Endpunkt ins Feld geladen. Direkte Schlüssel lassen sich mit Anzeigen/Verbergen einsehen; Secret-Verweise sind empfohlen. Ein leeres Schlüsselfeld beim Bearbeiten behält den gespeicherten Wert bei. **Gespeicherten Schlüssel entfernen** löscht ihn ausdrücklich. Neue Einträge in Home Assistants `secrets.yaml` kann diese App nicht erstellen. Direkte Formulareingabe erfordert überhaupt keine Textdatei.
+Du kannst einen Schlüssel direkt im Formular eingeben oder einen **bereits vorhandenen** Verweis wie `!secret groq_api_key` verwenden. Der Supervisor löst Secrets auf. Beim späteren Bearbeiten bleibt der Verweis erhalten; der aufgelöste Secret-Wert wird nicht an den Browser zurückgegeben. Beim Öffnen wird der Originaleintrag über einen eigenen Ingress-Endpunkt ins Feld geladen. Direkte Schlüssel lassen sich mit dem Augen-Symbol im Schlüsselfeld einsehen; Secret-Verweise sind empfohlen. Ein leeres Schlüsselfeld beim Bearbeiten behält den gespeicherten Wert bei. **Gespeicherten Schlüssel entfernen** löscht ihn ausdrücklich. Neue Einträge in Home Assistants `secrets.yaml` kann diese App nicht erstellen. Direkte Formulareingabe erfordert überhaupt keine Textdatei.
 
 Vorlagen decken Google AI Studio, Groq, Cerebras, OpenRouter, Mistral, Hugging Face, GitHub Models, SambaNova, Together AI, Fireworks AI, Cohere, Cloudflare, NVIDIA NIM, OpenAI, Anthropic, DeepSeek, xAI, Perplexity, Azure, Ollama und eigene OpenAI-kompatible Endpunkte ab. Modellnamen sind bearbeitbare Beispiele. SDK-Vorschläge aus dem Katalog der gepinnten LiteLLM-Version ergänzen das Modellfeld, wenn die direkte Abfrage nicht verfügbar ist; dieser Katalog bestätigt keine Verfügbarkeit in deinem Konto. Nicht alle Vorlagen sind gratis. Bei einigen Anbietern sind Konto-ID, Deployment-URL oder API-Version zusätzlich nötig.
 

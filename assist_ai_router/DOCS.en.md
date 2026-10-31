@@ -1,6 +1,6 @@
 # Assist AI Router — English
 
-Version **1.0.2** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Version **1.0.3** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
 
 ## Quick start
 
@@ -20,7 +20,7 @@ Saving in ingress writes the same app options as the Home Assistant Configuratio
 
 The key field shows `!`, `!s`, `!se` through `!secret name` without masking while the value follows the secret prefix; any deviation restores password masking.
 
-Enter keys directly in the form or reference an existing Home Assistant secret using `!secret name`. Supervisor resolves references; edits preserve the raw reference. Resolved secret values are never returned. Opening fetches the original entry through a dedicated ingress endpoint; literal keys can be revealed with Show/hide. Secret references are recommended. Leave the key field blank while editing to preserve it; use **Remove saved key** to clear it. This app cannot create new entries in HA's secrets file. Direct form entry requires no text files.
+Enter keys directly in the form or reference an existing Home Assistant secret using `!secret name`. Supervisor resolves references; edits preserve the raw reference. Resolved secret values are never returned. Opening fetches the original entry through a dedicated ingress endpoint; literal keys can be revealed using the eye icon inside the key field. Secret references are recommended. Leave the key field blank while editing to preserve it; use **Remove saved key** to clear it. This app cannot create new entries in HA's secrets file. Direct form entry requires no text files.
 
 ### Load models directly from a provider
 

@@ -6,7 +6,7 @@
 
 Assist AI Router combines cloud providers and local models behind an authenticated OpenAI-compatible endpoint. The app uses the included **LiteLLM SDK** for model requests and adds its own routing, usage accounting and ingress interface. Manage profiles, keys, models, priorities and limits in your browser. Saving writes to the app configuration and applies changes immediately.
 
-**App v1.0.2 · LiteLLM 1.106.4 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
+**App v1.0.3 · LiteLLM 1.106.4 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
 
 ## Features
 
@@ -99,11 +99,13 @@ Position numbers represent the **saved profile order**, including paused profile
 
 **Pause** excludes a profile from new model requests. Already running calls may finish. Pauses survive restarts until manually resumed. Credentials, rules, position and usage remain intact; resuming does not clear limits or cooldowns. Editing a paused profile may still fetch its model metadata.
 
-Literal API keys are initially masked and can be revealed with Show/hide. An input starting with `!` becomes visible while it follows the `!secret` marker: `!`, `!s`, `!se`, `!sec`, `!secr`, `!secre`, `!secret`, then `!secret name`. A deviation such as `!sx` or `!secretX` immediately restores password masking.
+Literal API keys are initially masked and can be revealed using the eye icon inside the key field. An input starting with `!` becomes visible while it follows the `!secret` marker: `!`, `!s`, `!se`, `!sec`, `!secr`, `!secre`, `!secret`, then `!secret name`. A deviation such as `!sx` or `!secretX` immediately restores password masking.
 
-`!secret name` references an **existing** Home Assistant secret. The app cannot create entries in HA's secrets file; direct key entry requires no text file. Opening a profile fetches its original saved entry through a dedicated ingress endpoint. A `!secret` remains a reference; its resolved value is never returned. Literal keys are initially masked and can be revealed with Show/hide. Secret references are recommended. Leave the key field empty when editing to keep its current credential; **Remove saved key** clears it explicitly.
+`!secret name` references an **existing** Home Assistant secret. The app cannot create entries in HA's secrets file; direct key entry requires no text file. Opening a profile fetches its original saved entry through a dedicated ingress endpoint. A `!secret` remains a reference; its resolved value is never returned. Literal keys are initially masked and can be revealed using the eye icon inside the key field. Secret references are recommended. Leave the key field empty when editing to keep its current credential; **Remove saved key** clears it explicitly.
 
 Web changes are saved through Supervisor to the app options, preserving raw secret references. Changes from HA's **Configuration** tab load when refreshing settings or restarting. Revision checking prevents a stale web view from silently overwriting newer data. Refresh after a conflict and reapply changes; avoid simultaneous editing in multiple interfaces.
+
+Use **Delete provider** on Overview or Providers to remove a profile after confirmation. Its routing-rule references and any resulting empty rules are removed. Existing usage records remain for quota accounting. Use Pause for temporary disabling.
 
 ## Routing and fallback
 

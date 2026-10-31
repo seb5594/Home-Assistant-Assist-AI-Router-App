@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+* Make confirmed provider deletion available on Overview as well as Providers; remove deleted profile references and empty routing rules.
+
+* Integrate the API-key visibility control as an eye icon inside the input, with state-aware German/English accessible labels and tooltips. Preserve automatic secret-reference visibility.
+
 ## 1.0.2
 
 * Replace the browser-native model datalist with an explicit searchable dropdown attached to the same model input. Opening the dropdown shows all loaded models without deleting the saved model name; supports mouse and keyboard selection.

@@ -73,8 +73,8 @@
     "test": "Verbindung testen",
     "testing": "Verbindung wird geprüft. Dabei wird eine kurze echte Modellanfrage gesendet …",
     "test_success": "Verbindung erfolgreich",
-    "remove": "Entfernen",
-    "remove_confirm": "Profil entfernen und aus Regeln austragen:",
+    "remove": "Anbieter löschen",
+    "remove_confirm": "Profil löschen und aus Routingregeln entfernen (leere Regeln werden gelöscht):",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "saved": "Gespeichert und sofort angewendet.",
@@ -269,7 +269,9 @@
     "offer_deepseek": "Der Guthabenendpunkt zeigt verfügbare, gewährte und gekaufte Geldbeträge, keinen Abotarif oder festen Tokenbestand.",
     "requests": "Anfragen",
     "show_all_models": "Alle geladenen Modelle anzeigen",
-    "no_model_matches": "Kein passendes geladenes Modell. Manuelle Eingabe ist möglich."
+    "no_model_matches": "Kein passendes geladenes Modell. Manuelle Eingabe ist möglich.",
+    "show_api_key": "API-Schlüssel anzeigen",
+    "hide_api_key": "API-Schlüssel verbergen"
   },
   "en": {
     "overview": "Overview",
@@ -345,8 +347,8 @@
     "test": "Test connection",
     "testing": "Testing the connection with a short real model request …",
     "test_success": "Connection successful",
-    "remove": "Remove",
-    "remove_confirm": "Remove profile and its rule references:",
+    "remove": "Delete provider",
+    "remove_confirm": "Delete profile and remove it from routing rules (empty rules will be deleted):",
     "save": "Save",
     "cancel": "Cancel",
     "saved": "Saved and applied immediately.",
@@ -541,6 +543,8 @@
     "offer_deepseek": "The balance endpoint reports available/granted/purchased funds, not a subscription tier or fixed token balance.",
     "requests": "requests",
     "show_all_models": "Show all loaded models",
-    "no_model_matches": "No matching loaded model. Manual entry remains available."
+    "no_model_matches": "No matching loaded model. Manual entry remains available.",
+    "show_api_key": "Show API key",
+    "hide_api_key": "Hide API key"
   }
 }

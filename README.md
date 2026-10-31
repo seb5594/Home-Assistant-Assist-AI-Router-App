@@ -2,7 +2,7 @@
 <h1 align="center">Assist AI Router</h1>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/seb5594/Home-Assistant-Assist-AI-Router-App/dev/assist_ai_router/logo.png" alt="Assist AI Router" width="160" height="160">
+  <img src="https://raw.githubusercontent.com/seb5594/Home-Assistant-Assist-AI-Router-App/main/assist_ai_router/logo.png" alt="Assist AI Router" width="160" height="160">
 </p>
 
 ---
@@ -12,14 +12,15 @@
   <a href="https://buymeacoffee.com/seb5594"><img src="https://img.shields.io/static/v1?label=Support&amp;message=Buy%20Me%20a%20Coffee&amp;color=FFDD00&amp;logo=buy-me-a-coffee&amp;logoColor=black&amp;style=for-the-badge" alt="Buy Me a Coffee" height="40"></a><br>
   <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps"><img src="https://img.shields.io/static/v1?label=Home%20Assistant&amp;message=Add%20app%20repository&amp;color=18BCF2&amp;logo=homeassistant&amp;logoColor=white&amp;style=for-the-badge" alt="Home Assistant" height="28"></a>
   <img src="https://img.shields.io/static/v1?label=home%20assistant&amp;message=%E2%89%A5%202026.8.0&amp;color=1877A5&amp;style=for-the-badge" alt="home assistant" height="28">
-  <a href="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App/releases/tag/v1.0.2"><img src="https://img.shields.io/static/v1?label=version&amp;message=1.0.2&amp;color=1877A5&amp;style=for-the-badge" alt="version" height="28"></a>
+  <a href="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App/releases"><img src="https://img.shields.io/static/v1?label=version&amp;message=1.0.3&amp;color=1877A5&amp;style=for-the-badge" alt="version" height="28"></a>
   <img src="https://img.shields.io/static/v1?label=image%20pulls&amp;message=20&amp;color=1877A5&amp;style=for-the-badge" alt="image pulls" height="28"><br>
   <img src="https://img.shields.io/static/v1?label=arch%20%26%20size&amp;message=amd64%201235.7%20%C2%B7%20aarch64%201242.6%20MiB&amp;color=157F71&amp;style=flat" alt="arch &amp; size" height="20">
   <img src="https://img.shields.io/static/v1?label=stage&amp;message=stable&amp;color=2F855A&amp;style=flat" alt="stage" height="20">
   <img src="https://img.shields.io/static/v1?label=ingress&amp;message=enabled&amp;color=7C3AED&amp;style=flat" alt="ingress" height="20"><br>
+  <a href="https://github.com/seb5594/Home-Assistant-Apps/stargazers"><img src="https://img.shields.io/github/stars/seb5594/Home-Assistant-Assist-AI-Router-App?label=stars&amp;style=flat" alt="stars" height="20"></a>
   <a href="https://github.com/seb5594/Home-Assistant-Apps/issues"><img src="https://img.shields.io/github/issues/seb5594/Home-Assistant-Assist-AI-Router-App?label=issues&amp;style=flat" alt="issues" height="20"></a>
   <img src="https://img.shields.io/static/v1?label=runtime%20tests&amp;message=4%20passed&amp;color=2F855A&amp;style=flat" alt="runtime tests" height="20">
-  <a href="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Assist-AI-Router-App/ci.yml?branch=dev&amp;label=checks&amp;style=flat" alt="checks" height="20"></a>
+  <a href="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Assist-AI-Router-App/ci.yml?branch=main&amp;label=checks&amp;style=flat" alt="checks" height="20"></a>
   <a href="https://github.com/seb5594/Home-Assistant-Apps#license"><img src="https://img.shields.io/github/license/seb5594/Home-Assistant-Assist-AI-Router-App?label=license&amp;style=flat" alt="license" height="20"></a>
 </p>
 <!-- header:end -->
@@ -30,7 +31,7 @@
 
 Assist AI Router bündelt verschiedene KI-Anbieter und lokale Modelle hinter einem authentifizierten, OpenAI-kompatiblen Endpunkt für Home Assistant Assist. Die App nutzt das enthaltene **LiteLLM SDK** für Modellanfragen und ergänzt eine eigene Routinglogik, Verbrauchserfassung und Ingress-Oberfläche. Anbieter, Modelle, Schlüssel, Prioritäten und Limits verwaltest du im Browser. Speichern übernimmt Änderungen in die App-Konfiguration und wendet sie sofort an.
 
-**App v1.0.2 · LiteLLM 1.106.4 · Home Assistant ab 2026.8 · amd64 / aarch64.** Ab dieser Ausgabe gilt das Versionsschema `MAJOR.MINOR.PATCH`. Frühere Datums-Releases bleiben im Changelog erhalten.
+**App v1.0.3 · LiteLLM 1.106.4 · Home Assistant ab 2026.8 · amd64 / aarch64.** Ab dieser Ausgabe gilt das Versionsschema `MAJOR.MINOR.PATCH`. Frühere Datums-Releases bleiben im Changelog erhalten.
 
 ## Funktionen
 
@@ -125,11 +126,13 @@ Positionsnummern zeigen die **gespeicherte Profilreihenfolge**, einschließlich 
 
 **Pausieren** schließt ein Profil für neue Modellanfragen aus. Bereits laufende Aufrufe können abschließen. Pausen bleiben über Neustarts bestehen und enden nur durch **Fortsetzen**. Schlüssel, Regeln, Position und Verbrauch bleiben erhalten; Fortsetzen setzt keine Kontingente oder Abkühlzeiten zurück. Modell-Metadaten können beim Bearbeiten eines pausierten Profils weiterhin geladen werden.
 
-Wörtliche API-Schlüssel sind zunächst maskiert und lassen sich über Anzeigen/Verbergen einsehen. Beginnt die Eingabe mit `!`, bleibt sie sichtbar, solange sie zu `!secret` passt: `!`, `!s`, `!se`, `!sec`, `!secr`, `!secre`, `!secret` und anschließend `!secret name`. Bei einer Abweichung wie `!sx` oder `!secretX` wird sofort wieder maskiert.
+Wörtliche API-Schlüssel sind zunächst maskiert und lassen sich über das Augen-Symbol im Schlüsselfeld einsehen. Beginnt die Eingabe mit `!`, bleibt sie sichtbar, solange sie zu `!secret` passt: `!`, `!s`, `!se`, `!sec`, `!secr`, `!secre`, `!secret` und anschließend `!secret name`. Bei einer Abweichung wie `!sx` oder `!secretX` wird sofort wieder maskiert.
 
-`!secret name` verweist auf ein **vorhandenes** HA-Secret. Die App kann keine neuen Einträge in der Secrets-Datei anlegen. Direkte Schlüsseleingabe benötigt keine Textdatei. Beim Öffnen eines Profils wird der ursprünglich gespeicherte Eintrag über einen eigenen Ingress-Endpunkt geladen. Bei `!secret` bleibt ausschließlich der Verweis sichtbar; aufgelöste Secret-Werte werden nicht an den Browser zurückgegeben. Direkte Schlüssel sind zunächst maskiert und lassen sich mit Anzeigen/Verbergen einsehen. Secrets sind empfohlen. Beim Bearbeiten das Feld leer lassen, um den bisherigen Schlüssel zu behalten; **Gespeicherten Schlüssel entfernen** löscht ihn ausdrücklich.
+`!secret name` verweist auf ein **vorhandenes** HA-Secret. Die App kann keine neuen Einträge in der Secrets-Datei anlegen. Direkte Schlüsseleingabe benötigt keine Textdatei. Beim Öffnen eines Profils wird der ursprünglich gespeicherte Eintrag über einen eigenen Ingress-Endpunkt geladen. Bei `!secret` bleibt ausschließlich der Verweis sichtbar; aufgelöste Secret-Werte werden nicht an den Browser zurückgegeben. Direkte Schlüssel sind zunächst maskiert und lassen sich mit dem Augen-Symbol im Schlüsselfeld einsehen. Secrets sind empfohlen. Beim Bearbeiten das Feld leer lassen, um den bisherigen Schlüssel zu behalten; **Gespeicherten Schlüssel entfernen** löscht ihn ausdrücklich.
 
 Webänderungen werden über Supervisor in den App-Optionen gespeichert, einschließlich der rohen Secret-Verweise. Änderungen im HA-Reiter **Konfiguration** werden beim Aktualisieren der Einstellungen oder Neustart eingelesen. Eine Revisionsprüfung verhindert, dass eine veraltete Webansicht neuere Änderungen unbemerkt ersetzt. Bei Konflikten aktualisieren und erneut bearbeiten; parallele Änderungen in mehreren Oberflächen vermeiden.
+
+Mit **Anbieter löschen** kannst du ein Profil nach Bestätigung dauerhaft aus Übersicht oder Anbieteransicht entfernen. Es wird aus Routingregeln ausgetragen; leere Regeln werden gelöscht. Bisherige Verbrauchsdatensätze bleiben für die Kontingentabrechnung erhalten. Zum vorübergehenden Abschalten stattdessen Pausieren verwenden.
 
 ## Routing und Fallbacks
 

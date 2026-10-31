@@ -10,7 +10,7 @@ function ui() {
   // Load the real UI functions without starting network/polling/bootstrap handlers.
   vm.runInContext(source.slice(0, source.indexOf("$('#close-editor').onclick")) + `
     render = () => {}; notice = () => {};
-    globalThis.subject = {state, bindApiKeyMask, moveProvider};
+    globalThis.subject = {state, bindApiKeyMask, moveProvider, removeProvider};
   `, context);
   return context;
 }
@@ -100,7 +100,7 @@ function editorUi(handlers) {
     showModal() { this.open = true; }
   }
   const nodes = Object.fromEntries(['provider-fields','editor-title','cancel-editor','save-provider','close-editor','provider-form','editor','notice'].map(id => ['#'+id,new Element('div')]));
-  const document = {createElement: tag => new Element(tag), createTextNode: text => text, querySelector: q => nodes[q]};
+  const document = {createElementNS: (_, tag) => new Element(tag), createElement: tag => new Element(tag), createTextNode: text => text, querySelector: q => nodes[q]};
   const context = vm.createContext({structuredClone, Intl, document, crypto: {getRandomValues: a => a}, Event, calls: [], handlers});
   vm.runInContext(source.slice(0, source.indexOf("$('#close-editor').onclick")) + `
     api = async (route, method, body) => { calls.push({route, body}); return handlers[route] ? handlers[route](body) : {}; };
@@ -169,4 +169,17 @@ test('model dropdown supports keyboard navigation and Escape', async () => {
   assert.equal(input.value,'groq/a');
   page.toggle(); key('Escape');
   assert.equal(page.all().find(e => e.id === 'model-options').hidden,true);
+});
+
+
+test('provider deletion requires confirmation and cleans rule targets while preserving other profiles', async () => {
+  const context = ui(); const writes = configure(context);
+  context.subject.state.cfg.rules.push({provider_ids:'a'});
+  context.confirm = () => false;
+  await context.subject.removeProvider('a','First'); assert.equal(writes.length,0);
+  context.confirm = () => true;
+  await context.subject.removeProvider('a','First');
+  assert.deepEqual(Array.from(context.subject.state.cfg.providers,p=>p.id),['b','c']);
+  assert.deepEqual(Array.from(context.subject.state.cfg.rules,r=>r.provider_ids),['c']);
+  assert.equal(writes.length,1);
 });

@@ -49,6 +49,25 @@ function bindApiKeyMaskValue(input) {
 function bindApiKeyMask(input) {
   input.addEventListener('input', () => bindApiKeyMaskValue(input)); bindApiKeyMaskValue(input);
 }
+function keyVisibilityControl(input) {
+  const wrap = el('div', undefined, 'key-input');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '1.8'); svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round'); svg.setAttribute('aria-hidden', 'true');
+  for (const path of ['M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z', 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0']) {
+    const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path'); shape.setAttribute('d', path); svg.append(shape);
+  }
+  const slash = document.createElementNS('http://www.w3.org/2000/svg', 'path'); slash.setAttribute('d', 'M3 3 21 21'); svg.append(slash);
+  const refresh = () => {
+    const visible = input.type !== 'password';
+    const label = t(visible ? 'hide_api_key' : 'show_api_key');
+    toggle.ariaLabel = label; toggle.title = label; toggle.setAttribute('aria-pressed', String(visible));
+    slash.setAttribute('visibility', visible ? 'visible' : 'hidden');
+  };
+  const toggle = button('', () => { input.type = input.type === 'password' ? 'text' : 'password'; refresh(); }, 'key-visibility');
+  toggle.append(svg); input.addEventListener('input', refresh);
+  wrap.append(input, toggle); refresh();
+  return {wrap, refresh};
+}
 async function moveProvider(id, targetId, after = false) {
   if (state.saving || id === targetId) return;
   const c = cloneCfg();
@@ -62,6 +81,12 @@ async function moveProvider(id, targetId, after = false) {
   notice(`${t('provider_order_saved')} ${profile.name}: ${t('position')} ${to + 1}.`);
   const handle = [...document.querySelectorAll('.drag-handle')].find(e => e.dataset.providerId === id);
   handle?.focus();
+}
+async function removeProvider(id, name) {
+  if (!confirm(`${t('remove_confirm')} ${name}?`)) return;
+  const c = cloneCfg(); c.providers = c.providers.filter(p => p.id !== id);
+  c.rules = c.rules.map(rule => ({...rule, provider_ids: rule.provider_ids.split(',').map(value => value.trim()).filter(value => value !== id).join(',')})).filter(rule => rule.provider_ids);
+  await save(c);
 }
 function providerList(compact = false) {
   const list = el('ol', undefined, 'provider-list');
@@ -148,14 +173,7 @@ function providerCard(p, index, compact = false) {
   test.disabled = !p.enabled;
   if (!p.enabled) test.title = t('resume_before_test');
   actions.append(toggle, actionButton('edit', () => openEditor(p)), test);
-  if (!compact) {
-    const remove = actionButton('remove', async () => {
-      if (!confirm(`${t('remove_confirm')} ${p.name}?`)) return;
-      const c = cloneCfg(); c.providers.splice(index, 1);
-      c.rules = c.rules.map(r => ({...r, provider_ids: r.provider_ids.split(',').filter(id => id.trim() !== p.id).join(',')})).filter(r => r.provider_ids);
-      await save(c);
-    }, 'danger'); actions.append(remove);
-  }
+  actions.append(actionButton('remove', () => removeProvider(p.id, p.name), 'danger'));
   const preset = state.catalog.find(x => x.id === p.preset); if (preset) actions.append(link(t('provider_dashboard') + ' ↗', preset.usage_url));
   card.append(actions); return card;
 }
@@ -274,8 +292,7 @@ function openEditor(existing, preset) {
     liveStatus.textContent = t('provider_models_auto_hint');
   };
   const key = field('api_key', p.api_key_reference || '', 'password', t('key_hint')); bindApiKeyMask(key.input); key.input.autocomplete = 'new-password'; key.input.spellcheck = false; key.input.autocapitalize = 'none'; key.input.placeholder = p.api_key_set ? t('keep_key') : '!secret my_ai_key'; grid.append(key.wrap);
-  const revealKey = button(t('show_hide'), () => { key.input.type = key.input.type === 'password' ? 'text' : 'password'; });
-  key.wrap.append(revealKey);
+  const keyVisibility = keyVisibilityControl(key.input); key.wrap.append(keyVisibility.wrap);
   key.input.addEventListener('input', () => { keyEdited = true; });
   const clear = field('clear_key', false, 'checkbox'); if (existing) grid.append(clear.wrap);
   const apiBase = field('api_base', p.api_base || '', 'text', t('base_hint'));
@@ -342,7 +359,7 @@ function openEditor(existing, preset) {
     const revision = state.revision;
     const data = await api('provider-credential', 'POST', {provider_id: p.id, revision});
     if (!key.input.isConnected || !$('#editor').open) return;
-    if (!keyEdited && !clear.input.checked) { key.input.value = data.api_key; bindApiKeyMaskValue(key.input); }
+    if (!keyEdited && !clear.input.checked) { key.input.value = data.api_key; bindApiKeyMaskValue(key.input); keyVisibility.refresh(); }
   });
 }
 function renderRouting(root) {
