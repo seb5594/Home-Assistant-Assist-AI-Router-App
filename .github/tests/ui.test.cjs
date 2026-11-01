@@ -10,7 +10,7 @@ function ui() {
   // Load the real UI functions without starting network/polling/bootstrap handlers.
   vm.runInContext(source.slice(0, source.indexOf("$('#close-editor').onclick")) + `
     render = () => {}; notice = () => {};
-    globalThis.subject = {state, bindApiKeyMask, moveProvider, removeProvider};
+    globalThis.subject = {state, bindApiKeyMask, moveProvider, removeProvider, testProvider};
   `, context);
   return context;
 }
@@ -182,4 +182,18 @@ test('provider deletion requires confirmation and cleans rule targets while pres
   assert.deepEqual(Array.from(context.subject.state.cfg.providers,p=>p.id),['b','c']);
   assert.deepEqual(Array.from(context.subject.state.cfg.rules,r=>r.provider_ids),['c']);
   assert.equal(writes.length,1);
+});
+
+
+test('token-consuming tests send no request unless explicitly confirmed', async () => {
+  const context = ui(); const calls = [];
+  context.mockApi = async (route, method, body) => { calls.push({route, method, body}); return {usage:{total_tokens:4}}; };
+  vm.runInContext('api = mockApi;', context);
+  context.confirm = () => false;
+  await context.subject.testProvider('a'); assert.equal(calls.length,0);
+  context.confirm = () => true;
+  await context.subject.testProvider('a');
+  assert.equal(calls.length,2);
+  assert.equal(calls[0].route,'test'); assert.equal(calls[0].body.confirmed,true);
+  assert.equal(calls[0].body.provider_id,'a'); assert.equal(calls[1].route,'status');
 });

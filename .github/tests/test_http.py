@@ -44,6 +44,26 @@ class HTTP(unittest.TestCase):
         except urllib.error.HTTPError as error:
             return error.code, error.read(), error.headers
 
+    def test_idle_reads_do_not_generate_completions_and_tests_require_confirmation(self):
+        calls = []
+        self.state.router.call = lambda *args: (calls.append(args), response())[1]
+        for _ in range(3):
+            for server, path, auth in ((self.admin, "/api/status", False),
+                                       (self.api, "/v1/models", True),
+                                       (self.api, "/health", True)):
+                self.assertEqual(self.request(server, path, auth=auth)[0], 200)
+        for confirmation in (None, False, "true"):
+            self.assertEqual(self.request(self.admin, "/api/test", dict(provider_id="a", confirmed=confirmation))[0], 400)
+        self.assertEqual(calls, [])
+        self.assertEqual(self.state.ledger.recent(), [])
+        self.assertEqual(self.request(self.admin, "/api/test", dict(provider_id="a", confirmed=True))[0], 200)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][1]["max_tokens"], 8)
+        self.assertEqual(self.state.ledger.recent()[0]["source"], "manual_test")
+        body = dict(model="assist-auto", messages=[dict(role="user", content="Hi")], source="manual_test")
+        self.assertEqual(self.request(self.api, "/v1/chat/completions", body, auth=True)[0], 200)
+        self.assertEqual(self.state.ledger.recent()[0]["source"], "api")
+
     def test_data_plane_requires_auth_and_never_exposes_admin_endpoints(self):
         self.assertEqual(self.request(self.api, "/v1/models")[0], 401)
         code, data, _ = self.request(self.api, "/v1/models", auth=True)

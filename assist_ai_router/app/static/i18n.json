@@ -271,7 +271,14 @@
     "show_all_models": "Alle geladenen Modelle anzeigen",
     "no_model_matches": "Kein passendes geladenes Modell. Manuelle Eingabe ist möglich.",
     "show_api_key": "API-Schlüssel anzeigen",
-    "hide_api_key": "API-Schlüssel verbergen"
+    "hide_api_key": "API-Schlüssel verbergen",
+    "source": "Herkunft",
+    "source_api": "API (z. B. Assist)",
+    "source_manual_test": "Manueller Test",
+    "source_unknown": "Unbekannt (Altbestand)",
+    "test_token_warning": "Dieser Test sendet einen echten Prompt an den Anbieter und verbraucht Kontingent (bis zu 8 Ausgabetokens plus Eingabe). Jetzt ausführen?",
+    "test_confirmation_required": "Testanfrage muss bestätigt werden.",
+    "idle_usage_note": "Keine automatischen Test-Prompts: Die UI-Aktualisierung liest lokale Statistiken. Modelllisten und Kontoinformationen verwenden Metadaten-Endpunkte, keine Textgenerierung. API-Anfragen können von verbundenen Integrationen oder Automationen kommen. Zum vollständigen Stoppen alle Anbieter pausieren oder die App stoppen. ≈ ist eine Reservierung, kein bestätigter Verbrauch. Die Herkunft wird erst ab Version 1.0.4 erfasst."
   },
   "en": {
     "overview": "Overview",
@@ -545,6 +552,13 @@
     "show_all_models": "Show all loaded models",
     "no_model_matches": "No matching loaded model. Manual entry remains available.",
     "show_api_key": "Show API key",
-    "hide_api_key": "Hide API key"
+    "hide_api_key": "Hide API key",
+    "source": "Source",
+    "source_api": "API (e.g. Assist)",
+    "source_manual_test": "Manual test",
+    "source_unknown": "Unknown (older record)",
+    "test_token_warning": "This test sends a real prompt to the provider and uses quota (up to 8 output tokens plus input). Run now?",
+    "test_confirmation_required": "Confirm the test request first.",
+    "idle_usage_note": "No automatic test prompts: UI refresh reads local statistics. Model lists and account information use metadata endpoints, not text generation. API requests can originate from connected integrations or automations. Pause all providers or stop the app to stop forwarding requests completely. ≈ is a reservation, not confirmed usage. Source tracking starts with version 1.0.4."
   }
 }

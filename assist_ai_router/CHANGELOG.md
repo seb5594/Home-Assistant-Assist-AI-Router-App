@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4
+
+* Require explicit confirmation before token-consuming provider tests. Track API versus manual-test origin in usage history and CSV, with an additive migration for older records.
+* Mark estimated totals consistently and explain idle traffic, metadata requests and quota reservations in German and English.
+
 ## 1.0.3
 
 * Make confirmed provider deletion available on Overview as well as Providers; remove deleted profile references and empty routing rules.

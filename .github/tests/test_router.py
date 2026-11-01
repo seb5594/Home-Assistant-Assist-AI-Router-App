@@ -1,5 +1,6 @@
 import copy
 import json
+import sqlite3
 import sys
 import tempfile
 import threading
@@ -49,6 +50,24 @@ class Routing(unittest.TestCase):
     def run_request(self, call=None, **payload):
         return Router(self.settings, self.ledger, call or (lambda *a: response())).run(
             dict(model="assist-auto", messages=[dict(role="user", content="Hello")], **payload))
+
+    def test_legacy_ledger_migration_keeps_usage_and_marks_unknown_source(self):
+        path = Path(self.tmp.name) / "legacy.sqlite"
+        with sqlite3.connect(path) as db:
+            db.execute("CREATE TABLE attempts (id INTEGER PRIMARY KEY, request_id TEXT, provider TEXT, "
+                       "scope TEXT, ts REAL, status TEXT, input_tokens INTEGER, output_tokens INTEGER, "
+                       "tokens INTEGER, estimated INTEGER, cost REAL, latency_ms INTEGER DEFAULT 0, reason TEXT DEFAULT '')")
+            db.execute("INSERT INTO attempts VALUES(1,'old','a','scope',1,'success',8,2,10,0,0,10,'')")
+        for _ in range(2):
+            migrated = Ledger(path)
+            try:
+                row = migrated.recent()[0]
+                self.assertEqual(row["source"], "unknown")
+                self.assertEqual(row["tokens"], 10)
+                self.assertEqual(row["request_id"], "old")
+                self.assertEqual(row["status"], "success")
+            finally:
+                migrated.close()
 
     def test_readme_rule_examples_match_first_rule_and_global_priority(self):
         rules = [

@@ -269,10 +269,12 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/versions":
                 return self.reply(200, state.versions())
             if path == "/api/test":
+                if body.get("confirmed") is not True:
+                    raise GatewayError("test_confirmation_required", 400)
                 pid = body.get("provider_id")
                 if pid not in [p["id"] for p in state.settings.snapshot()["providers"]]:
                     raise GatewayError("unknown_provider", 404)
-                result, meta = state.router.run(dict(model="provider:" + pid, messages=[dict(role="user", content="Reply OK")], max_tokens=8))
+                result, meta = state.router.run(dict(model="provider:" + pid, messages=[dict(role="user", content="Reply OK")], max_tokens=8), source="manual_test")
                 return self.reply(200, dict(ok=True, usage=result.get("usage"), **meta))
         raise GatewayError("not_found", 404)
 

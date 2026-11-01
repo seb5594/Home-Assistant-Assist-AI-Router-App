@@ -169,13 +169,20 @@ function providerCard(p, index, compact = false) {
   });
   toggle.title = t('pause_provider_hint');
   toggle.setAttribute('aria-pressed', String(!p.enabled));
-  const test = actionButton('test', async () => { notice(t('testing')); const data = await api('test', 'POST', {provider_id: p.id}); state.status = await api('status'); render(); notice(`${t('test_success')} · ${fmt(data.usage?.total_tokens)} tokens`); });
+  const test = actionButton('test', () => testProvider(p.id));
   test.disabled = !p.enabled;
   if (!p.enabled) test.title = t('resume_before_test');
   actions.append(toggle, actionButton('edit', () => openEditor(p)), test);
   actions.append(actionButton('remove', () => removeProvider(p.id, p.name), 'danger'));
   const preset = state.catalog.find(x => x.id === p.preset); if (preset) actions.append(link(t('provider_dashboard') + ' ↗', preset.usage_url));
   card.append(actions); return card;
+}
+async function testProvider(id) {
+  if (!confirm(t('test_token_warning'))) return;
+  notice(t('testing'));
+  const data = await api('test', 'POST', {provider_id: id, confirmed: true});
+  state.status = await api('status'); render();
+  notice(`${t('test_success')} · ${fmt(data.usage?.total_tokens)} tokens`);
 }
 function renderOverview(root) {
   const hero = el('section', undefined, 'hero'); const copy = el('div'); copy.append(el('h2', t('hero_title')), el('p', t('hero_text'))); hero.append(copy, el('span', '⇄', 'hero-mark')); root.append(hero);
@@ -375,11 +382,11 @@ function renderRouting(root) {
   form.addEventListener('submit', e => { e.preventDefault(); guard(async () => { const targets = choices.filter(x => x.checked).map(x => x.name); if (!targets.length) throw new Error('invalid_rules'); const c = cloneCfg(); c.rules.push({name: name.input.value.trim(), alias: alias.input.value.trim(), require_tools: tools.input.checked, provider_ids: targets.join(',')}); await save(c); }); }); panel.append(form); root.append(panel);
 }
 function renderActivity(root) {
-  root.append(el('p', t('activity_intro'), 'muted'), note(t('estimate_note')));
+  root.append(el('p', t('activity_intro'), 'muted'), note(t('estimate_note')), note(t('idle_usage_note')));
   const panel = el('div', undefined, 'panel'); const toolbar = el('div', undefined, 'toolbar'); const filter = el('input'); filter.type = 'search'; filter.placeholder = t('filter_requests'); filter.ariaLabel = t('filter_requests');
-  toolbar.append(filter, button(t('export_csv'), () => { const columns = ['request_id', 'provider', 'ts', 'status', 'input_tokens', 'output_tokens', 'tokens', 'estimated', 'cost', 'latency_ms', 'reason']; const csv = [columns.join(','), ...state.status.recent.map(r => columns.map(k => '"' + String(r[k] ?? '').replaceAll('"', '""') + '"').join(','))].join('\r\n'); const url = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8'})); const a = el('a'); a.href = url; a.download = 'assist-ai-router-usage.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); })); panel.append(toolbar);
-  const wrap = el('div', undefined, 'table-wrap'); const table = el('table'); const head = el('thead'); const row = el('tr'); for (const key of ['time', 'provider', 'status', 'input', 'output', 'total', 'latency', 'request_id']) row.append(el('th', t(key))); head.append(row); const body = el('tbody'); table.append(head, body); wrap.append(table); panel.append(wrap); root.append(panel);
-  function fill() { body.replaceChildren(); for (const r of state.status.recent.filter(r => [r.request_id, r.provider, r.reason].join(' ').includes(filter.value))) { const tr = el('tr'); const name = state.cfg.providers.find(p => p.id === r.provider)?.name || r.provider; const values = [new Date(r.ts * 1000).toLocaleTimeString(state.lang), name, t(r.reason || r.status), `${r.estimated ? '≈ ' : ''}${fmt(r.input_tokens)}`, `${r.estimated ? '≈ ' : ''}${fmt(r.output_tokens)}`, fmt(r.tokens), `${fmt(r.latency_ms)} ms`, r.request_id.slice(0, 12)]; values.forEach(v => tr.append(el('td', v))); body.append(tr); } if (!body.children.length) { const tr = el('tr'); const td = el('td', t('no_requests')); td.colSpan = 8; tr.append(td); body.append(tr); } }
+  toolbar.append(filter, button(t('export_csv'), () => { const columns = ['request_id', 'source', 'provider', 'ts', 'status', 'input_tokens', 'output_tokens', 'tokens', 'estimated', 'cost', 'latency_ms', 'reason']; const csv = [columns.join(','), ...state.status.recent.map(r => columns.map(k => '"' + String(r[k] ?? '').replaceAll('"', '""') + '"').join(','))].join('\r\n'); const url = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8'})); const a = el('a'); a.href = url; a.download = 'assist-ai-router-usage.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); })); panel.append(toolbar);
+  const wrap = el('div', undefined, 'table-wrap'); const table = el('table'); const head = el('thead'); const row = el('tr'); for (const key of ['time', 'source', 'provider', 'status', 'input', 'output', 'total', 'latency', 'request_id']) row.append(el('th', t(key))); head.append(row); const body = el('tbody'); table.append(head, body); wrap.append(table); panel.append(wrap); root.append(panel);
+  function fill() { body.replaceChildren(); for (const r of state.status.recent.filter(r => [r.request_id, r.provider, r.reason, t('source_' + (r.source || 'unknown'))].join(' ').includes(filter.value))) { const tr = el('tr'); const name = state.cfg.providers.find(p => p.id === r.provider)?.name || r.provider; const values = [new Date(r.ts * 1000).toLocaleTimeString(state.lang), t('source_' + (r.source || 'unknown')), name, t(r.reason || r.status), `${r.estimated ? '≈ ' : ''}${fmt(r.input_tokens)}`, `${r.estimated ? '≈ ' : ''}${fmt(r.output_tokens)}`, `${r.estimated ? '≈ ' : ''}${fmt(r.tokens)}`, `${fmt(r.latency_ms)} ms`, r.request_id.slice(0, 12)]; values.forEach(v => tr.append(el('td', v))); body.append(tr); } if (!body.children.length) { const tr = el('tr'); const td = el('td', t('no_requests')); td.colSpan = 9; tr.append(td); body.append(tr); } }
   filter.addEventListener('input', fill); fill();
 }
 function connectionRow(label, value, secret = false) {

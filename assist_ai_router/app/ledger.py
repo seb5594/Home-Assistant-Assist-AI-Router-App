@@ -36,6 +36,9 @@ class Ledger:
                 provider TEXT PRIMARY KEY, status TEXT, until REAL, checked REAL, latency_ms INTEGER
             );
         """)
+        # Additive migration: existing history cannot be retrospectively attributed.
+        if "source" not in {row[1] for row in self.db.execute("PRAGMA table_info(attempts)")}:
+            self.db.execute("ALTER TABLE attempts ADD COLUMN source TEXT NOT NULL DEFAULT 'unknown'")
         # A crash may have happened after a charge. Keep its conservative token reservation.
         self.db.execute("UPDATE attempts SET status='interrupted', reason='usage_unknown' WHERE status='pending'")
         self.db.commit()
@@ -74,7 +77,7 @@ class Ledger:
                 return field
         return ""
 
-    def reserve(self, p, request_id, input_tokens, output_tokens, reserve):
+    def reserve(self, p, request_id, input_tokens, output_tokens, reserve, source="api"):
         with self.lock, self.db:
             now = self.clock()
             if self.health(p)["until"] > now:
@@ -85,9 +88,9 @@ class Ledger:
             if reason:
                 return None, reason
             cursor = self.db.execute("INSERT INTO attempts(request_id,provider,scope,ts,status,input_tokens,"
-                                     "output_tokens,tokens,estimated,cost) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                                     "output_tokens,tokens,estimated,cost,source) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                                      (request_id, p["id"], scope(p), now, "pending", input_tokens,
-                                      output_tokens, total, 1, cost))
+                                      output_tokens, total, 1, cost, source))
             return cursor.lastrowid, ""
 
     def finish(self, attempt, p, status, usage, latency, reason=""):
@@ -104,7 +107,7 @@ class Ledger:
     def recent(self, limit=100):
         with self.lock:
             return [dict(r) for r in self.db.execute("SELECT id,request_id,provider,ts,status,input_tokens,output_tokens,"
-                                                   "tokens,estimated,cost,latency_ms,reason FROM attempts ORDER BY id DESC LIMIT ?", (limit,))]
+                                                   "tokens,estimated,cost,latency_ms,reason,source FROM attempts ORDER BY id DESC LIMIT ?", (limit,))]
 
     def prune(self, days):
         with self.lock, self.db:

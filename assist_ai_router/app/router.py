@@ -135,15 +135,15 @@ class Router:
             eligible = eligible[offset:] + eligible[:offset]
         return eligible
 
-    def run(self, payload):
+    def run(self, payload, source="api"):
         if not self.slots.acquire(blocking=False):
             raise GatewayError("gateway_busy", 503)
         try:
-            return self._run(payload)
+            return self._run(payload, source)
         finally:
             self.slots.release()
 
-    def _run(self, payload):
+    def _run(self, payload, source):
         if not isinstance(payload, dict):
             raise GatewayError("invalid_request", 400)
         payload = copy.deepcopy(payload)
@@ -170,7 +170,7 @@ class Router:
             if scope(p) in blocked_scopes:
                 attempts.append(dict(provider=p["id"], reason="shared_quota_cooldown"))
                 continue
-            attempt, reason = self.ledger.reserve(p, rid, inp, payload["max_tokens"], cfg["reserve_percent"])
+            attempt, reason = self.ledger.reserve(p, rid, inp, payload["max_tokens"], cfg["reserve_percent"], source)
             if attempt is None:
                 attempts.append(dict(provider=p["id"], reason=reason))
                 continue
