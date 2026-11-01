@@ -6,7 +6,7 @@
 
 Assist AI Router combines cloud providers and local models behind an authenticated OpenAI-compatible endpoint. The app uses the included **LiteLLM SDK** for model requests and adds its own routing, usage accounting and ingress interface. Manage profiles, keys, models, priorities and limits in your browser. Saving writes to the app configuration and applies changes immediately.
 
-**App v1.0.4 · LiteLLM 1.106.4 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
+**App v1.0.4 · LiteLLM 1.106.6 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
 
 ## Features
 
@@ -206,7 +206,7 @@ There are no periodic paid model probes. Status reflects previous tests/requests
 - **Networking:** Cloud calls transmit prompts/context to the selected provider. Local servers must be reachable from the app. Use suitable HTTPS access over untrusted networks.
 - **Credentials:** The normal settings response omits keys. Only an opened editor fetches its original entry; resolved secrets are never returned. Model metadata requests send credentials in headers to the configured destination, block redirects and suppress upstream error bodies. LiteLLM telemetry is disabled.
 
-LiteLLM remains pinned to **1.106.4** and its image digest; startup verifies the SDK version. **Version check** queries GitHub only after a click, caches for one hour and installs nothing. A newer upstream release does not automatically replace the reviewed dependency.
+LiteLLM remains pinned to **1.106.6** and its image digest; startup verifies the SDK version. **Version check** queries GitHub only after a click, caches for one hour and installs nothing. A newer upstream release does not automatically replace the reviewed dependency.
 
 ## Unexpected requests while idle
 

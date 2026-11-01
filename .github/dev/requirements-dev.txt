@@ -1,2 +1,2 @@
-litellm[proxy]==1.106.4
+litellm[proxy]==1.106.6
 PyYAML==6.0.3

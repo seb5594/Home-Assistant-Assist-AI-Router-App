@@ -1,6 +1,6 @@
 # Assist AI Router — English
 
-Version **1.0.3** · LiteLLM **1.106.4** · Home Assistant **2026.8+**
+Version **1.0.5** · LiteLLM **1.106.6** · Home Assistant **2026.8+**
 
 ## Quick start
 
@@ -73,7 +73,7 @@ If all allowed providers are exhausted/unavailable and no local fallback is avai
 
 Before a stable release, test installation on real HA OS amd64/aarch64, protection mode/ingress, secret persistence/restart, the native LiteLLM setup and Assist tool calls, real multi-provider 429/Retry-After behavior and backup restore. Software tests do not replace these acceptance checks. Record visual browser verification separately.
 
-References: [native LiteLLM integration](https://www.home-assistant.io/integrations/litellm/), [app options/secrets](https://contributors.home-assistant.io/apps/guides/options/), [Supervisor app API](https://contributors.home-assistant.io/apps/supervisor-api/apps/), [LiteLLM routing](https://docs.litellm.ai/docs/routing), [pinned release](https://github.com/BerriAI/litellm/releases/tag/v1.106.4).
+References: [native LiteLLM integration](https://www.home-assistant.io/integrations/litellm/), [app options/secrets](https://contributors.home-assistant.io/apps/guides/options/), [Supervisor app API](https://contributors.home-assistant.io/apps/supervisor-api/apps/), [LiteLLM routing](https://docs.litellm.ai/docs/routing), [pinned release](https://github.com/BerriAI/litellm/releases/tag/v1.106.6).
 
 ## API plans and rule examples
 

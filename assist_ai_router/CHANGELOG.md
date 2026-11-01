@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+* Update the LiteLLM runtime image and test dependency together to 1.106.6.
+
 ## 1.0.4
 
 * Require explicit confirmation before token-consuming provider tests. Track API versus manual-test origin in usage history and CSV, with an additive migration for older records.
