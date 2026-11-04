@@ -26,7 +26,7 @@
 
 **Mehrere KI-Anbieter. Ein Zugang für Home Assistant Assist.**
 
-[English](README.en.md) · [Konfiguration im Detail](assist_ai_router/DOCS.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.md) · [Changelog](assist_ai_router/CHANGELOG.md)
+[🇬🇧 English](README.en.md) · [Konfiguration im Detail](assist_ai_router/DOCS.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.md) · [Changelog](assist_ai_router/CHANGELOG.md)
 
 Assist AI Router bündelt verschiedene KI-Anbieter und lokale Modelle hinter einem authentifizierten, OpenAI-kompatiblen Endpunkt für Home Assistant Assist. Die App nutzt das enthaltene **LiteLLM SDK** für Modellanfragen und ergänzt eine eigene Routinglogik, Verbrauchserfassung und Ingress-Oberfläche. Anbieter, Modelle, Schlüssel, Prioritäten und Limits verwaltest du im Browser. Speichern übernimmt Änderungen in die App-Konfiguration und wendet sie sofort an.
 
