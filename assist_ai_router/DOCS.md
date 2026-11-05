@@ -87,4 +87,4 @@ Die Softwaretests ersetzen keinen Praxistest auf Home Assistant OS: amd64/aarch6
 
 ## API-Tarife und Regelbeispiele
 
-Die [deutsche README](../README.md) enthält konkrete Alias-/Tool-/Auffangregeln sowie eine datierte Tabelle offizieller Tarif-/Limitquellen. Die Anbieteransicht unterscheidet dokumentierte Beispiele von OpenRouter-/DeepSeek-Kontodaten. Geldbeträge sind keine Tokenlimits; unbekannte Werte bleiben unbekannt. Beispiel-Limits werden nur per Klick ins Formular übernommen.
+Die [deutsche README](../README.de.md) enthält konkrete Alias-/Tool-/Auffangregeln sowie eine datierte Tabelle offizieller Tarif-/Limitquellen. Die Anbieteransicht unterscheidet dokumentierte Beispiele von OpenRouter-/DeepSeek-Kontodaten. Geldbeträge sind keine Tokenlimits; unbekannte Werte bleiben unbekannt. Beispiel-Limits werden nur per Klick ins Formular übernommen.
