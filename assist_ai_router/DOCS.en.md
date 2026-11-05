@@ -77,4 +77,4 @@ References: [native LiteLLM integration](https://www.home-assistant.io/integrati
 
 ## API plans and rule examples
 
-The [English README](../README.en.md) contains concrete alias/tool/catch-all rules and a dated table of official plan/limit sources. The editor distinguishes documentation examples from OpenRouter/DeepSeek account data. Currency balances are not token limits; unknown values stay unknown. Example limits only populate the form after a click.
+The [English README](../README.md) contains concrete alias/tool/catch-all rules and a dated table of official plan/limit sources. The editor distinguishes documentation examples from OpenRouter/DeepSeek account data. Currency balances are not token limits; unknown values stay unknown. Example limits only populate the form after a click.

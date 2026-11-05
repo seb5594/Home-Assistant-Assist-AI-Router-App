@@ -24,243 +24,243 @@
 </p>
 <!-- header:end -->
 
-**Mehrere KI-Anbieter. Ein Zugang für Home Assistant Assist.**
+**Multiple AI providers. One endpoint for Home Assistant Assist.**
 
-[🇬🇧 English](README.en.md) · [Konfiguration im Detail](assist_ai_router/DOCS.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.md) · [Changelog](assist_ai_router/CHANGELOG.md)
+[🇩🇪 Deutsch](README.de.md) · [Detailed configuration](assist_ai_router/DOCS.en.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.en.md) · [Changelog](assist_ai_router/CHANGELOG.md)
 
-Assist AI Router bündelt verschiedene KI-Anbieter und lokale Modelle hinter einem authentifizierten, OpenAI-kompatiblen Endpunkt für Home Assistant Assist. Die App nutzt das enthaltene **LiteLLM SDK** für Modellanfragen und ergänzt eine eigene Routinglogik, Verbrauchserfassung und Ingress-Oberfläche. Anbieter, Modelle, Schlüssel, Prioritäten und Limits verwaltest du im Browser. Speichern übernimmt Änderungen in die App-Konfiguration und wendet sie sofort an.
+Assist AI Router combines cloud providers and local models behind an authenticated OpenAI-compatible endpoint. The app uses the included **LiteLLM SDK** for model requests and adds its own routing, usage accounting and ingress interface. Manage profiles, keys, models, priorities and limits in your browser. Saving writes to the app configuration and applies changes immediately.
 
-**App v1.0.4 · LiteLLM 1.106.6 · Home Assistant ab 2026.8 · amd64 / aarch64.** Ab dieser Ausgabe gilt das Versionsschema `MAJOR.MINOR.PATCH`. Frühere Datums-Releases bleiben im Changelog erhalten.
+**App v1.0.4 · LiteLLM 1.106.6 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
 
-## Funktionen
+## Features
 
-- Bis zu **100 Anbieterprofile**, jeweils mit Modell, Schlüssel, Endpunkt und Limits; mehrere Profile desselben Anbieters sind möglich.
-- **Nummerierte Liste untereinander** in Übersicht und Anbieteransicht, per Ziehgriff ⠿ oder ↑/↓ sortierbar. Änderungen werden sofort gespeichert.
-- **Pausieren/Fortsetzen**, ohne Zugangsdaten, Position, Regeln oder Verbrauch zu verlieren.
-- Automatische Modellvorschläge direkt im Feld **LLM-Modell**, ergänzt durch SDK-Vorschläge und manuelle Eingabe.
-- Vier Routing-Presets, eigene Alias-/Tool-Regeln, Ausweichanbieter und persistente Abkühlzeiten.
-- Lokale Kontingentkontrolle mit Reservierungen für parallele Anfragen, gemeinsamen Kontingentgruppen und Sicherheitsreserve.
-- Eingabe-/Ausgabe-/Gesamttokens, Status, Dauer und Request-ID pro API-Versuch sowie CSV-Export.
-- Geführte Einrichtung der nativen **LiteLLM-Integration** oder von **MCP Assist aus HACS**.
-- Deutsche und englische Oberfläche sowie eine festgelegte LiteLLM-Version mit Image-Digest und optionalem Versionscheck.
+- Up to **100 provider profiles**, each with a model, credential, endpoint and limits; multiple profiles per provider are supported.
+- **Numbered vertical lists** on Overview and Providers. Reorder using the ⠿ drag handle or ↑/↓ buttons; changes save immediately.
+- **Pause/resume** without losing keys, position, rules or usage.
+- Automatically loaded model suggestions directly in the **LLM model** field, with SDK suggestions and manual entry as fallbacks.
+- Four routing presets, custom alias/tool rules, provider fallback and persistent cooldowns.
+- Local quota enforcement with reservations for concurrent requests, shared quota groups and a safety reserve.
+- Input/output/total tokens, status, duration and request ID per API attempt, plus CSV export.
+- Guided setup for the native **LiteLLM integration** or **HACS MCP Assist**.
+- German/English interface, a pinned LiteLLM image tag/digest and an optional stable-release check.
 
-Die App bildet die hier beschriebenen Funktionen ab. Sie ist keine Oberfläche für sämtliche Einstellungen des vollständigen LiteLLM-Proxys: Teams, virtuelle LiteLLM-Schlüssel, externe Abrechnung und alle SDK-/Proxyparameter sind nicht als App-Optionen verfügbar.
+This app exposes the settings documented here. It does not expose every feature of the full LiteLLM proxy administration system: teams, LiteLLM virtual keys, external billing and all SDK/proxy parameters are not available as app options.
 
-## Installation und Schnellstart
+## Installation and quick start
 
-1. Öffne das [Home-Assistant-App-Repository](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps) oder füge `https://github.com/seb5594/Home-Assistant-Apps` im App-Store als Repository hinzu. Du benötigst eine HA-Installation mit Supervisor/App-Unterstützung.
-2. Installiere und starte **Assist AI Router** und öffne die Weboberfläche. LiteLLM ist enthalten; kein separater Proxy muss installiert werden.
-3. Wähle unter **Anbieter** eine Vorlage, vergib einen Profilnamen und trage Schlüssel oder vorhandenen `!secret`-Verweis ein. Für eigene/lokale Server ist eine erreichbare API-Basis-URL nötig.
-4. Wähle ein **LLM-Modell** aus den Vorschlägen oder gib den vollständigen Modellnamen mit LiteLLM-Präfix ein. Speichere und teste.
-5. Ergänze weitere unabhängige Anbieter, sortiere die Profile und wähle unter **Routing** ein Preset. Standard ist **Feste Priorität**.
-6. Folge **Assist verbinden** und verwende für normale Assist-Nutzung **`assist-auto`**.
+1. Open the [Home Assistant app repository link](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps), or add `https://github.com/seb5594/Home-Assistant-Apps` in the app store repository settings. A Home Assistant installation with Supervisor/app support is required.
+2. Install/start **Assist AI Router** and open its web UI. LiteLLM is included; no separate proxy installation is necessary.
+3. Under **Providers**, select a template and name the profile. Enter a key or existing `!secret` reference; custom/local servers also need a reachable API base URL.
+4. Choose an **LLM model** suggestion or enter the full model name with its LiteLLM provider prefix. Save and test.
+5. Add independent fallback providers, sort them, and choose a **Routing** preset. **Fixed priority** is the default.
+6. Follow **Connect Assist** and use **`assist-auto`** for normal Assist requests.
 
-**Verbindung testen** sendet eine kurze echte Modellanfrage. Dabei können Tokens, Anfragenkontingent und gegebenenfalls Kosten anfallen. Eine erfolgreiche Textantwort beweist nicht die Qualität der Tool-Aufrufe oder Gerätesteuerung.
+**Test connection** sends a short real model request. It can consume tokens, request allowances and potentially money. A text response does not prove tool-calling quality or device-control reliability.
 
-## Anbieter und Modelle
+## Provider templates and models
 
-### 21 Vorlagen
-
-| Vorlage | LiteLLM-Präfix | Direkte Modellabfrage |
+| Template | LiteLLM prefix | Direct model listing |
 | --- | --- | --- |
-| Google AI Studio / Gemini | `gemini/` | Ja |
-| Groq | `groq/` | Ja |
-| Cerebras | `cerebras/` | Ja |
-| OpenRouter | `openrouter/` | Ja |
-| Mistral / La Plateforme | `mistral/` | Ja |
-| Hugging Face Inference | `huggingface/` | Ja |
-| GitHub Models | `github/` | SDK / manuell |
-| SambaNova | `sambanova/` | Ja |
-| Together AI | `together_ai/` | Ja |
-| Fireworks AI | `fireworks_ai/` | SDK / manuell |
-| Cohere | `cohere_chat/` | Ja |
-| Cloudflare Workers AI | `cloudflare/` | SDK / manuell |
-| NVIDIA NIM | `nvidia_nim/` | Ja |
-| OpenAI | `openai/` | Ja |
-| Anthropic | `anthropic/` | Ja |
-| DeepSeek | `deepseek/` | Ja |
-| xAI | `xai/` | Ja |
-| Perplexity | `perplexity/` | SDK / manuell |
-| Azure OpenAI | `azure/` | SDK / manuell; Deployment/API-Version beachten |
-| Ollama | `ollama_chat/` | Ja, am lokalen Server |
-| OpenAI-kompatibel / vLLM / llama.cpp | `openai/` | Wenn der Server einen Modellendpunkt anbietet |
+| Google AI Studio / Gemini | `gemini/` | Yes |
+| Groq | `groq/` | Yes |
+| Cerebras | `cerebras/` | Yes |
+| OpenRouter | `openrouter/` | Yes |
+| Mistral / La Plateforme | `mistral/` | Yes |
+| Hugging Face Inference | `huggingface/` | Yes |
+| GitHub Models | `github/` | SDK / manual |
+| SambaNova | `sambanova/` | Yes |
+| Together AI | `together_ai/` | Yes |
+| Fireworks AI | `fireworks_ai/` | SDK / manual |
+| Cohere | `cohere_chat/` | Yes |
+| Cloudflare Workers AI | `cloudflare/` | SDK / manual |
+| NVIDIA NIM | `nvidia_nim/` | Yes |
+| OpenAI | `openai/` | Yes |
+| Anthropic | `anthropic/` | Yes |
+| DeepSeek | `deepseek/` | Yes |
+| xAI | `xai/` | Yes |
+| Perplexity | `perplexity/` | SDK / manual |
+| Azure OpenAI | `azure/` | SDK / manual; check deployment/API version |
+| Ollama | `ollama_chat/` | Yes, from the local server |
+| OpenAI-compatible / vLLM / llama.cpp | `openai/` | If the server provides a model endpoint |
 
-Vorlagen garantieren keine Gratisnutzung. Konto, Modell, Endpunkt, API-Version und Tool-Fähigkeiten müssen passen. Manche Anbieter erfordern eigene Konto-/Deployment-URLs. Mehrere Modelle desselben Schlüssels werden als getrennte Profile eingerichtet.
+These **21 templates** do not guarantee free access. Account permissions, model IDs, pricing, API versions and tool capabilities must match. Some providers require a custom account/deployment URL. Configure separate profiles for multiple models using the same key.
 
-### Automatische Modellliste im Eingabefeld
+### Automatic suggestions inside the model field
 
-Beim Öffnen des Anbieterfensters lädt die App mit gespeicherten Zugangsdaten Modelle vom Anbieter. Nach einer neuen Schlüssel-/URL-Eingabe startet die Aktualisierung beim Verlassen des Feldes. Offene Modellendpunkte und lokale Server können ohne Schlüssel abgefragt werden. Es gibt keinen separaten Ladebutton und keine zweite Modellauswahl.
+Opening a provider editor automatically loads its model list using saved credentials. After entering a new key or API URL, leaving that field triggers an update. Public model endpoints and local servers may work without a key. There is no separate load button or second model picker.
 
-Die Ergebnisse stehen als Vorschläge **direkt im Feld LLM-Modell**. Mit ▾ direkt am Modellfeld öffnest du alle geladenen Modelle, auch wenn bereits ein anderer Modellname gespeichert ist. Tippen filtert die Liste; ↑/↓ und Enter wählen einen Eintrag. Escape schließt die Liste. LiteLLM-Präfixe werden ergänzt; die App ersetzt einen bestehenden Modellwert nicht ungefragt. Manuelle Eingaben bleiben möglich.
+Results appear as suggestions **inside the LLM model field**. Use ▾ beside the model input to open all loaded models, even with an existing saved name. Typing filters the list; ↑/↓ and Enter select an entry. Escape closes the list. LiteLLM prefixes are added automatically. The existing value is not silently replaced, and manual names remain supported.
 
-Modellabfragen lesen Metadaten, erzeugen keinen Prompt und ändern die Tokenzähler nicht. Anbieter können solche Abfragen begrenzen. Antwortgröße, Laufzeit und Pagination sind begrenzt; Teillisten werden markiert. Scheitert die Abfrage, bleiben verfügbare SDK-Vorschläge und manuelle Eingabe. Ein gelistetes Modell garantiert weder Gratiszugang noch Kontoberechtigung noch Chat-/Tool-Unterstützung.
+Discovery reads metadata without generating a prompt or changing token counters. Providers may rate-limit metadata requests. Pagination, response size and time are bounded; partial lists are labeled. If discovery fails, available SDK suggestions and manual entry remain. A listed model does not guarantee free pricing, account access or chat/tool support.
 
-Neue wörtliche Schlüssel funktionieren vor dem Speichern. Neue `!secret`-Verweise müssen zuerst zusammen mit einem Modellnamen gespeichert werden, damit Supervisor sie auflösen kann. Gespeicherte Schlüssel werden bei einer Änderung des Zielendpunkts erst nach erneuter Schlüsseleingabe oder ausdrücklichem Speichern der geänderten Konfiguration genutzt.
+New literal keys work before saving. New `!secret` references must first be saved with a model name so Supervisor can resolve them. Saved keys are not reused for a changed destination until you re-enter the key or explicitly save the changed profile.
 
-### API-Tarife, Kontodaten und belegbare Limitbeispiele
+### API plans, account data and documented limit examples
 
-Im Anbieterfenster zeigt **API-Tarif und Kontingente** dokumentierte Tarifoptionen und bei unterstützten offiziellen Endpunkten Live-Kontodaten. Stand: **30.10.2026**. Die Tarifoptionen sind keine Erkennung deines Kontos. Ein Chat-Webseiten-Abo enthält nicht automatisch API-Nutzung.
+The provider editor shows documented plan options and, for supported official endpoints, live account data. Checked **2026-10-30**. Documented plan options do not identify your account. A consumer chat subscription does not automatically include API usage.
 
-| Anbieter | Dokumentierte Information | Quelle |
+| Provider | Documented information | Source |
 | --- | --- | --- |
-| Google AI Studio | Free-/Paid-Tarife: RPM, TPM und RPD hängen von Projekt und Modell ab; aktuelle Werte in AI Studio prüfen. | [Docs](https://ai.google.dev/gemini-api/docs/rate-limits) |
-| Groq | Free-Beispiele für gpt-oss-20b/120b: 30 RPM, 1.000 RPD, 8.000 TPM, 200.000 Tokens/Tag. Organisationslimits können abweichen. | [Docs](https://console.groq.com/docs/rate-limits) |
-| Cerebras | Trial-Beispiele für gpt-oss-120b/qwen-3.8-27b: 5 RPM, 30.000 ungecachte TPM, 1.000.000 Tokens/Tag. Zusätzlich gelten Stunden-/Gesamttokenlimits. Trial-Credits verfallen; kein dauerhaft kostenloser Tarif. | [Docs](https://inference-docs.cerebras.ai/support/rate-limits) |
-| OpenRouter | Die Schlüssel-API kann Free-Tier-Status, Credit-Limit und tägliche Gratis-Modellanfragen liefern. Kein universelles Tokenlimit. | [Docs](https://openrouter.ai/docs/api_reference/limits) |
-| Mistral / La Plateforme | Limits hängen von Organisation, Modell und Tarif ab. Limits-Seite prüfen; ein Endkunden-Abo legt kein API-Kontingent fest. | [Docs](https://docs.mistral.ai/admin/billing-usage/usage-limits) |
-| Hugging Face Inference | Dokumentierte Monatscredits: Free 0,10 USD (Änderungen möglich), PRO 2 USD, Organisationen 2 USD je Sitz. Geldbeträge sind keine festen Tokenmengen und kein geprüfter Reststand. | [Docs](https://huggingface.co/docs/inference-providers/pricing) |
-| SambaNova | Credits und aktuellen Tarif im Konto prüfen. Die Free-Tarifseite verlangt gekaufte Credits vor API-Nutzung; kein Gratis-Tokenbudget angenommen. | [Docs](https://cloud.sambanova.ai/plans) |
-| Cohere | Trial: 1.000 API-Aufrufe/Monat; bestimmte Chatmodelle 20 RPM. Monatsanfragen sind weder Tokens noch Tageskontingente. | [Docs](https://docs.cohere.com/docs/rate-limits) |
-| Cloudflare Workers AI | 10.000 Neurons/Tag als freie Zuteilung; keine universelle Umrechnung in Tokens. Einige Modelle benötigen bezahlten Zugang. | [Docs](https://developers.cloudflare.com/workers-ai/platform/pricing/) |
-| NVIDIA NIM | Developer-Zugang dient dem Prototyping. Kein zuverlässig dokumentiertes universelles Tokenkontingent wird voreingetragen. | [Docs](https://docs.api.nvidia.com/nim/docs/product) |
-| DeepSeek | Der Guthabenendpunkt zeigt verfügbare, gewährte und gekaufte Geldbeträge, keinen Abotarif oder festen Tokenbestand. | [Docs](https://api-docs.deepseek.com/api/get-user-balance/) |
+| Google AI Studio | Project/model-specific RPM, TPM and RPD; check AI Studio. | [Docs](https://ai.google.dev/gemini-api/docs/rate-limits) |
+| Groq | Free examples for gpt-oss-20b/120b: 30 RPM, 1,000 RPD, 8,000 TPM, 200,000 TPD. Organization limits may differ. | [Docs](https://console.groq.com/docs/rate-limits) |
+| Cerebras | Trial examples gpt-oss-120b/qwen-3.8-27b: 5 RPM, 30,000 uncached TPM, 1,000,000 TPD. Separate hourly/total-token limits apply. Trial credits expire; not a permanent free tier. | [Docs](https://inference-docs.cerebras.ai/support/rate-limits) |
+| OpenRouter | API key metadata can report free-tier status, credit cap and daily free-model requests; no universal token cap. | [Docs](https://openrouter.ai/docs/api_reference/limits) |
+| Mistral / La Plateforme | Organization/model-specific limits; check the Limits page. Consumer subscriptions do not establish API allowance. | [Docs](https://docs.mistral.ai/admin/billing-usage/usage-limits) |
+| Hugging Face Inference | Published monthly credits: Free $0.10 (subject to change), PRO $2, organizations $2/seat. Monetary credits are not fixed tokens or verified remaining balance. | [Docs](https://huggingface.co/docs/inference-providers/pricing) |
+| SambaNova | Check account credits and current plan; the Free plan page asks for purchased credits before API use. No free token allowance assumed. | [Docs](https://cloud.sambanova.ai/plans) |
+| Cohere | Trial: 1,000 API calls/month; selected chat models 20 RPM. Monthly requests are not tokens or daily allowance. | [Docs](https://docs.cohere.com/docs/rate-limits) |
+| Cloudflare Workers AI | 10,000 Neurons/day free allocation; neurons cannot be converted into a universal token allowance. Some models require paid access. | [Docs](https://developers.cloudflare.com/workers-ai/platform/pricing/) |
+| NVIDIA NIM | Developer access is for prototyping. No reliably documented universal token quota is prefilled. | [Docs](https://docs.api.nvidia.com/nim/docs/product) |
+| DeepSeek | The balance endpoint reports available/granted/purchased funds, not a subscription tier or fixed token balance. | [Docs](https://api-docs.deepseek.com/api/get-user-balance/) |
 
-Für weitere Vorlagen bleibt der Tarif unbekannt, wenn der normale API-Schlüssel keinen unterstützten Kontoendpunkt bietet. Eigene Proxy-URLs werden nicht zur Kontoabfrage an einen anderen Host umgeleitet. Keine Login-Seiten werden gescrapt und keine Probe-Prompts zur Tariferkennung erzeugt.
+Other templates retain an unknown plan where a normal API key does not expose a supported account endpoint. Keys bound to custom proxy URLs are not forwarded to another host for account checks. No login pages are scraped or probe prompts generated to identify plans.
 
-OpenRouter kann den Free-Tier-Status, das verbleibende Schlüssel-Ausgabelimit und gegebenenfalls tägliche Gratis-Modellanfragen liefern. DeepSeek liefert verfügbare, gewährte und gekaufte Geldbeträge. Diese Kontodaten sind bis zu fünf Minuten zwischengespeichert und von den lokalen Router-Zählern getrennt. Geld wird nicht in Tokens umgerechnet. Lokale Limits und Kostenfreigaben ändern sich nicht automatisch. Bei passenden Groq-/Cerebras-Modellen kannst du ein **dokumentiertes Limitbeispiel** ins Formular übernehmen, mit deinem Konto abgleichen und speichern. Zusätzliche Stunden- und andere nicht abgebildete Limits werden weiterhin vom Anbieter durchgesetzt.
+OpenRouter can return free-tier status, remaining key spending cap and, where supplied, daily free-model requests. DeepSeek reports available, granted and purchased funds. Account metadata is cached for up to five minutes and kept separate from local router counters. Money is never converted to tokens. Local limits and cost permissions never change automatically. Matching Groq/Cerebras models offer **Apply documented limit example**: compare with your actual account, then save. Additional hourly and other unrepresented restrictions remain enforced by the provider.
 
-## Reihenfolge, Pausen und Schlüssel
+## Order, pauses and credentials
 
-Positionsnummern zeigen die **gespeicherte Profilreihenfolge**, einschließlich pausierter Profile. Am Griff ⠿ vor/hinter ein Profil ziehen oder die Pfeil-Buttons verwenden. Die Reihenfolge bestimmt das Preset **Feste Priorität**; andere Presets können sie umsortieren. Auch in der Übersicht sind die Profile untereinander angeordnet.
+Position numbers represent the **saved profile order**, including paused profiles. Drag the ⠿ handle before/after a profile or use the arrow buttons. **Fixed priority** uses this order; other presets may sort differently. Overview also displays profiles vertically.
 
-**Pausieren** schließt ein Profil für neue Modellanfragen aus. Bereits laufende Aufrufe können abschließen. Pausen bleiben über Neustarts bestehen und enden nur durch **Fortsetzen**. Schlüssel, Regeln, Position und Verbrauch bleiben erhalten; Fortsetzen setzt keine Kontingente oder Abkühlzeiten zurück. Modell-Metadaten können beim Bearbeiten eines pausierten Profils weiterhin geladen werden.
+**Pause** excludes a profile from new model requests. Already running calls may finish. Pauses survive restarts until manually resumed. Credentials, rules, position and usage remain intact; resuming does not clear limits or cooldowns. Editing a paused profile may still fetch its model metadata.
 
-Wörtliche API-Schlüssel sind zunächst maskiert und lassen sich über das Augen-Symbol im Schlüsselfeld einsehen. Beginnt die Eingabe mit `!`, bleibt sie sichtbar, solange sie zu `!secret` passt: `!`, `!s`, `!se`, `!sec`, `!secr`, `!secre`, `!secret` und anschließend `!secret name`. Bei einer Abweichung wie `!sx` oder `!secretX` wird sofort wieder maskiert.
+Literal API keys are initially masked and can be revealed using the eye icon inside the key field. An input starting with `!` becomes visible while it follows the `!secret` marker: `!`, `!s`, `!se`, `!sec`, `!secr`, `!secre`, `!secret`, then `!secret name`. A deviation such as `!sx` or `!secretX` immediately restores password masking.
 
-`!secret name` verweist auf ein **vorhandenes** HA-Secret. Die App kann keine neuen Einträge in der Secrets-Datei anlegen. Direkte Schlüsseleingabe benötigt keine Textdatei. Beim Öffnen eines Profils wird der ursprünglich gespeicherte Eintrag über einen eigenen Ingress-Endpunkt geladen. Bei `!secret` bleibt ausschließlich der Verweis sichtbar; aufgelöste Secret-Werte werden nicht an den Browser zurückgegeben. Direkte Schlüssel sind zunächst maskiert und lassen sich mit dem Augen-Symbol im Schlüsselfeld einsehen. Secrets sind empfohlen. Beim Bearbeiten das Feld leer lassen, um den bisherigen Schlüssel zu behalten; **Gespeicherten Schlüssel entfernen** löscht ihn ausdrücklich.
+`!secret name` references an **existing** Home Assistant secret. The app cannot create entries in HA's secrets file; direct key entry requires no text file. Opening a profile fetches its original saved entry through a dedicated ingress endpoint. A `!secret` remains a reference; its resolved value is never returned. Literal keys are initially masked and can be revealed using the eye icon inside the key field. Secret references are recommended. Leave the key field empty when editing to keep its current credential; **Remove saved key** clears it explicitly.
 
-Webänderungen werden über Supervisor in den App-Optionen gespeichert, einschließlich der rohen Secret-Verweise. Änderungen im HA-Reiter **Konfiguration** werden beim Aktualisieren der Einstellungen oder Neustart eingelesen. Eine Revisionsprüfung verhindert, dass eine veraltete Webansicht neuere Änderungen unbemerkt ersetzt. Bei Konflikten aktualisieren und erneut bearbeiten; parallele Änderungen in mehreren Oberflächen vermeiden.
+Web changes are saved through Supervisor to the app options, preserving raw secret references. Changes from HA's **Configuration** tab load when refreshing settings or restarting. Revision checking prevents a stale web view from silently overwriting newer data. Refresh after a conflict and reapply changes; avoid simultaneous editing in multiple interfaces.
 
-Mit **Anbieter löschen** kannst du ein Profil nach Bestätigung dauerhaft aus Übersicht oder Anbieteransicht entfernen. Es wird aus Routingregeln ausgetragen; leere Regeln werden gelöscht. Bisherige Verbrauchsdatensätze bleiben für die Kontingentabrechnung erhalten. Zum vorübergehenden Abschalten stattdessen Pausieren verwenden.
+Use **Delete provider** on Overview or Providers to remove a profile after confirmation. Its routing-rule references and any resulting empty rules are removed. Existing usage records remain for quota accounting. Use Pause for temporary disabling.
 
-## Routing und Fallbacks
+## Routing and fallback
 
-| Preset | Auswahl |
+| Preset | Selection |
 | --- | --- |
-| Feste Priorität | Geeignete Profile in gespeicherter Reihenfolge |
-| Kontingente schonen | Nach dem höchsten verbrauchten Anteil bekannter Limits; ohne bekannte Limits wird 1,0 angesetzt |
-| Anfragen verteilen | Dreht den Startpunkt pro Anfrage weiter |
-| Lokal zuerst | Lokale Profile vor erlaubten Cloud-Profilen; Reihenfolge innerhalb der Gruppen bleibt bestehen |
+| Fixed priority | Eligible profiles in saved order |
+| Preserve quotas | Sorts by the highest consumed fraction of known limits; unknown limits use a fraction of 1.0 |
+| Spread requests | Rotates the starting point on each request |
+| Local first | Local profiles before allowed cloud profiles, preserving saved order within each group |
 
-Vor einem Versuch prüft der Router Aktivierung, Kostenfreigabe, Tool-/Bildfähigkeiten, Kontextfenster, lokale Limits und Abkühlzeiten. Ohne globale Freigabe kostenpflichtiger Profile kommen nur als kostenlos bestätigt oder lokal markierte Profile infrage. Diese Angaben sind manuelle Freigaben, keine Tarifprüfung oder Garantie gegen Anbieterabrechnungen.
+Before an attempt, the router checks enabled state, cost permission, tool/image support, context size, local limits and cooldowns. With paid profiles disabled globally, only profiles marked free or local are eligible. These are manual permissions, not tariff checks or a guarantee against provider billing.
 
-**Eigene Regeln** wählen per Modellalias und optionaler Tool-Bedingung eine erlaubte Profilmenge. Die erste passende Regel gewinnt. Das Routing-Preset sortiert innerhalb dieser Menge; Fallbacks verlassen sie nicht. `*` ist eine Auffangregel für Routing-Aliase. Die Reihenfolge der IDs in einer Regel definiert keine eigene Priorität.
+**Custom rules** select an allowed set of profiles by model alias and optionally the presence of tools. The first matching rule wins. The preset sorts inside that set; fallbacks cannot leave it. `*` is a catch-all for routing aliases. The order of IDs within a rule does not create a separate priority.
 
-**`assist-auto`** ist der Standardzugang. Eigene Regelaliase erscheinen ebenfalls in `/v1/models`. **`provider:<profil-id>`** verwendet genau ein aktives Profil ohne Ausweichanbieter, aber weiterhin mit Kosten-/Fähigkeits-/Limitprüfung. Für Ausfallsicherheit einen Routingalias verwenden.
+**`assist-auto`** is the default router alias. Custom aliases also appear in `/v1/models`. **`provider:<profile-id>`** targets exactly one active profile without fallback, while still enforcing capability, cost and quota restrictions. Use a routing alias for resilience.
 
-429, Authentifizierungsfehler, fehlende Modelle, Netzwerk-/Timeout- und Serverfehler können einen Fallback auslösen. `Retry-After` verlängert Abkühlzeiten; gemeinsame Kontingentgruppen teilen 429-Sperren. Allgemein abgelehnte Anfragen werden nicht beliebig wiederholt. Kontextfehler können zum nächsten geeigneten Modell führen. Nachrichten und Werkzeuge werden nicht abgeschnitten.
+429, authentication failures, missing models, network/timeouts and server errors can trigger fallback. `Retry-After` extends cooldowns; shared quota groups share 429 cooldowns. Generally rejected requests are not blindly retried. Context errors can try another eligible model. Messages and tool definitions are not truncated.
 
-**Beispiele:** Für „Gratis zuerst“ unabhängige Konten als überprüft kostenlos bestätigen, Limits eintragen und Feste Priorität wählen. Für „Lokal bevorzugen“ einen Tool-fähigen lokalen Server ergänzen und Lokal zuerst wählen. Für getrennte Assist-Anforderungen einen Alias wie `assist-home` mit Tool-Bedingung und passenden Profilen anlegen.
+**Examples:** For free-first routing, confirm checked free access on independent accounts, enter limits and use Fixed priority. For local-first routing, add a tool-capable local server and choose Local first. For separate Assist requirements, define an alias such as `assist-home` with a tool condition and suitable profiles.
 
-Versuche und Zeitbudgets sind begrenzt. Sind alle erlaubten Anbieter erschöpft oder nicht erreichbar, liefert die API **HTTP 503 / `no_provider_available`**. Ein lokales Modell kann die Verfügbarkeit verbessern; unbegrenzte Antworten sind nicht garantiert.
+Attempts and time budgets are bounded. If all allowed providers are exhausted or unavailable, the API returns **HTTP 503 / `no_provider_available`**. A local fallback can improve availability; unlimited cloud answers cannot be guaranteed.
 
-### Konkrete Regeln zum Nachbauen in der Weboberfläche
+### Concrete rules to recreate in the UI
 
-Angenommene globale Profilreihenfolge: **1. Lokal**, **2. Groq**, **3. Gemini**. Wähle zunächst **Feste Priorität**. Trage Regeln über **Routing → Eigene Regeln** ein; Profilnamen stehen hier für deine tatsächlich eingerichteten Profile.
+Assume this global profile order: **1. Local**, **2. Groq**, **3. Gemini**. Start with **Fixed priority** and enter these under **Routing → Custom rules**. Profile names refer to your actual profiles.
 
-| Reihenfolge | Regelname | Alias | Werkzeuge erforderlich | Erlaubte Profile | Ergebnis |
+| Order | Rule name | Alias | Require tools | Allowed profiles | Result |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Assist mit Geräten | `assist-auto` | Ja | Lokal, Groq | Tool-Anfragen versuchen Lokal, danach Groq. |
-| 2 | Assist Text | `assist-auto` | Nein | Groq, Gemini | Anfragen ohne Tools versuchen Groq, danach Gemini. |
-| 3 | Privat lokal | `assist-private` | Nein | Lokal | Nur der lokale Server; kein Cloud-Fallback bei Ausfall. |
-| 4 | Cloud Text | `assist-cloud` | Nein | Groq, Gemini | Eigenes auswählbares Modell für Cloud-Anfragen mit Fallback. |
+| 1 | Assist with devices | `assist-auto` | Yes | Local, Groq | Requests carrying tools try Local, then Groq. |
+| 2 | Assist text | `assist-auto` | No | Groq, Gemini | Requests without tools try Groq, then Gemini. |
+| 3 | Private local | `assist-private` | No | Local | Local only; unavailable local models do not cause cloud fallback. |
+| 4 | Cloud text | `assist-cloud` | No | Groq, Gemini | A separate selectable model for cloud requests with fallback. |
 
-„Werkzeuge erforderlich: Nein“ bedeutet **keine Bedingung**, nicht „Werkzeuge verboten“. Deshalb steht die Tool-Regel vor der allgemeinen `assist-auto`-Regel. Die private Profilmenge verhindert Cloud-Fallbacks. Kostenfreigaben gelten zusätzlich zu diesen Regeln.
+Require tools = No means **no condition**, not “tools forbidden.” Put the tool rule before the general `assist-auto` rule. The private set prevents cloud fallback. Cost permissions still apply.
 
-Eine optionale **Auffangregel** mit Alias `*`, ohne Tool-Bedingung und erlaubten Profilen Groq/Gemini gehört ganz ans Ende. Sie wirkt nur auf bereits bekannte Routing-Aliase und legt keine beliebigen neuen Modellnamen an. Eine davor passende Regel wird durch sie nicht erweitert. Direkte `provider:`-Modelle umgehen die Regelauswahl.
+An optional **catch-all rule** with alias `*`, no tool condition and Groq/Gemini belongs last. It applies only to already known routing aliases; it does not create arbitrary model names. It cannot expand a set chosen by an earlier matching rule. Direct `provider:` models bypass rules.
 
-Die Auswahlreihenfolge der Checkboxen erzeugt keine zusätzliche Priorität. Im Beispiel geht Groq vor Gemini, weil die globale Liste so sortiert ist. Andere Routing-Presets können die Startposition ändern. Regeln prüfen keine Prompttexte, Uhrzeiten oder Wörter; unterstützt sind Alias, Tool-Bedingung und Profilmenge.
+Checkbox selection order does not create a separate priority. Groq precedes Gemini because of global order. Other presets can change the starting profile. Rules do not inspect prompt text, schedules or keywords; supported conditions are alias, presence of tools and allowed profile set.
 
-## Verbrauch und Kontingente
+## Usage and quotas
 
-Die Anzeige erfasst **lokal beobachteten Verbrauch dieses Routers**, keine universell verifizierten Anbieter-Guthaben. Nutzung durch andere Apps ist unbekannt. Die Anbieterportale sind verlinkt.
+The UI displays **locally observed usage through this router**, not universally verified provider balances. Other apps' usage is unknown. Provider portals are linked.
 
-| Profiloption | Bedeutung |
+| Profile option | Meaning |
 | --- | --- |
-| RPM / TPM | Anfragen/Tokens im rollierenden 60-Sekunden-Fenster |
-| Anfragen/Tag, Tokens/Tag, Tokens/Monat | Lokale Limits; Tages-/Monatswechsel um 00:00 UTC |
-| Kontextfenster | Konservative Eingabeschätzung plus maximales Ausgabebudget |
-| Eingabe-/Ausgabepreise | Manuelle USD je eine Million Tokens |
-| Monatliches Budget | Lokale Kostengrenze auf Basis der eingetragenen Preise |
-| Kontingentgruppe | Gemeinsamer Zähler mehrerer Profile desselben Kontos/Projekts |
+| RPM / TPM | Requests/tokens within a rolling 60-second window |
+| Requests/day, tokens/day, tokens/month | Local limits; day/month rollover at 00:00 UTC |
+| Context window | Conservative input estimate plus maximum output budget |
+| Input/output prices | Manually entered USD per million tokens |
+| Monthly budget | Local cost limit based on entered prices |
+| Quota group | Shared counters for profiles belonging to one account/project |
 
-**0 bedeutet unbekannt bzw. keine lokale Begrenzung.** Budgets benötigen passende Preise. Anbieterpräfix, Basis-URL und Schlüssel bilden standardmäßig die gemeinsame Zählergruppe. Für verschiedene Schlüssel desselben Kontolimits dieselbe ausdrückliche Kontingentgruppe und identische Limits verwenden.
+**0 means unknown or no local enforcement.** Budgets require meaningful prices. Profiles sharing provider prefix, API base URL and key automatically share counters. For different keys sharing one account allowance, use the same explicit quota group and identical limits.
 
-SQLite reserviert vor jedem API-Versuch geschätzte Eingabe plus maximale Ausgabe unter einer Sperre. So können parallele Anfragen dieselbe lokale Restmenge nicht mehrfach verplanen. Die Schätzung nutzt UTF-8-Bytes inklusive Werkzeuge plus Protokollreserve und ist keine exakte Tokenisierung. Anbieterwerte ersetzen die Reservierung nach erfolgreichen Antworten, sofern vorhanden. Fehlende Werte bleiben mit **≈** als geschätzt markiert. Fehlgeschlagene/unterbrochene Versuche behalten konservative Reservierungen; Anfragenzähler enthalten auch Fehler.
+Before each actual API attempt, SQLite reserves estimated input plus maximum output under a lock, preventing concurrent requests from promising the same local remainder twice. Input estimation uses UTF-8 bytes including tools plus a protocol allowance, not exact tokenization. Provider-reported usage replaces reservations after successful responses when available. Missing usage remains marked **≈**. Failed/interrupted attempts retain conservative reservations; request counters include failures.
 
-**Verbrauch** zeigt die letzten 100 tatsächlichen API-Versuche mit Profil, Request-ID, Zeit, Tokens, Dauer und Ergebnis. Fallbacks derselben Routeranfrage teilen die Request-ID. Ein Dialog mit mehreren Tool-Schritten kann mehrere Routeranfragen und IDs erzeugen. CSV enthält zusätzlich geschätzte Kosten. Prompts, Antworten und ausführbare Tool-Argumente werden nicht in der Verbrauchsdatenbank gespeichert.
+**Usage** shows the latest 100 actual API attempts with profile, request ID, timestamp, tokens, duration and outcome. Fallbacks for one router request share its ID. A conversation with multiple tool steps may generate several router requests and IDs. CSV also contains estimated costs. Prompts, completions and executable tool arguments are not stored in the usage database.
 
-## Home Assistant Assist verbinden
+## Connect Home Assistant Assist
 
-### Native LiteLLM-Integration
+### Native LiteLLM integration
 
-1. Öffne **Assist verbinden → LiteLLM → Verbindungsdaten anzeigen**.
-2. Kopiere Basis-URL und **Router-Schlüssel** in das verlinkte HA-Integrationsformular. Der Router-Schlüssel ist unabhängig von den Anbieterschlüsseln.
-3. Öffne den LiteLLM-Eintrag und füge einen Konversationsagenten für **`assist-auto`** oder deinen Regelalias hinzu.
-4. Aktiviere bei Bedarf **Home Assistant steuern**, gib die benötigten Entitäten frei und wähle den Agenten im Sprachassistenten.
+1. Open **Connect Assist → LiteLLM → Show connection details**.
+2. Copy the base URL and **router key** into the linked HA integration form. The router key is separate from provider keys.
+3. Open the LiteLLM entry and add a conversation agent for **`assist-auto`** or your rule alias.
+4. Enable **Control Home Assistant** if desired, expose the required entities, and select the agent in your voice assistant.
 
-Die App liefert die interne Adresse aus Supervisor auf Port 8000. Die native [LiteLLM-Integration](https://www.home-assistant.io/integrations/litellm/) verbindet Assist mit diesem Endpunkt. Geräteaktionen führt der Konversationsagent über die freigegebenen HA-Werkzeuge aus.
+The app supplies its internal Supervisor hostname on port 8000. The native [LiteLLM integration](https://www.home-assistant.io/integrations/litellm/) connects Assist to this endpoint. Device actions are performed by the conversation agent through the HA tools you permit.
 
-### MCP Assist aus HACS
+### HACS MCP Assist
 
-Wähle unter **Assist verbinden** alternativ **MCP Assist**. Die UI öffnet das HACS-Projekt und Integrationsformular und zeigt Kopierdaten. Download und HA-Neustart erfolgen durch dich.
+Alternatively choose **MCP Assist** under **Connect Assist**. The UI opens the HACS repository and integration form and provides copyable values. You perform the download and HA restart.
 
-Wähle den Servertyp **OpenAI**, die Router-URL **ohne abschließendes `/v1`**, den Router-Schlüssel und `assist-auto`. MCP Assist ergänzt die API-Pfade. Sein Timeout sollte über dem Router-Gesamtbudget liegen; die UI schlägt fünf zusätzliche Sekunden vor. MCP-Port 8090 ist nicht Router-Port 8000.
+Choose server type **OpenAI**, enter the router URL **without a trailing `/v1`**, the router key and `assist-auto`. MCP Assist appends the API paths. Set its timeout above the router's overall budget; the UI suggests five additional seconds. MCP port 8090 is not router API port 8000.
 
-Die [MCP-Assist-Anleitung](assist_ai_router/MCP_ASSIST.md) beschreibt Freigaben, Einrichtung und Fehlerbehebung für die geprüfte 0.17.2-Anbindung. [MCP Assist](https://github.com/mike-nott/mcp-assist) ist ein alternativer Konversationsagent. Die separat verlinkten nativen HA-MCP-Client/-Server-Integrationen sind dafür nicht pauschal nötig. Die App installiert nichts im Hintergrund und verändert keine HA-`.storage`-Dateien.
+The [MCP Assist guide](assist_ai_router/MCP_ASSIST.en.md) covers permissions, setup and troubleshooting for the inspected 0.17.2 connection. [MCP Assist](https://github.com/mike-nott/mcp-assist) is an alternative conversation agent. The separately linked native HA MCP client/server integrations are not generally required for this connection. The app installs nothing in the background and never edits HA `.storage` files.
 
-## Allgemeine Einstellungen und Betrieb
+## Settings and operation
 
-| Einstellung | Standard | Wirkung |
+| Setting | Default | Effect |
 | --- | --- | --- |
-| Ausgabetokens | 512 | Obergrenze pro Modellaufruf, auch bei größeren Clientwerten |
-| Gesamtbudget | 45 s | Zeitbudget einer Routeranfrage |
-| Budget je Versuch | 12 s | An LiteLLM weitergereichter Timeout pro Anbieter |
-| Max. Versuche | 4 | Höchstzahl tatsächlicher Anbieteraufrufe je Anfrage |
-| Abkühlzeit | 60 s | Basis für passende Fehler; `Retry-After` kann verlängern |
-| Reserve | 5 % | Nicht verplanter Anteil eingetragener lokaler Limits |
-| Historie | 30 Tage | Aufbewahrung; der laufende Monat bleibt für Monatszähler erhalten |
-| Kostenpflichtige Profile | Aus | Freigabe zusätzlich zu kostenlos/lokal markierten Profilen |
-| Eigene Gateway-URL | Leer | Überschreibt die angezeigte Adresse, richtet keinen Netzwerkzugang ein |
+| Output tokens | 512 | Cap per model call, including larger client requests |
+| Request budget | 45 s | Time budget for a router request |
+| Attempt budget | 12 s | Timeout forwarded to LiteLLM per provider |
+| Maximum attempts | 4 | Maximum actual provider calls per request |
+| Cooldown | 60 s | Base for eligible errors; Retry-After can extend it |
+| Reserve | 5% | Unallocated portion of configured local limits |
+| History | 30 days | Retention; current-month rows remain for monthly accounting |
+| Paid profiles | Off | Additional permission beyond free/local profiles |
+| Custom gateway URL | Empty | Overrides the displayed address; does not configure networking |
 
-Es gibt keine regelmäßigen kostenpflichtigen Modelltests. Statusanzeigen stammen aus früheren Tests/Anfragen und lokalen Sperren; „Verbunden“ ist kein kontinuierlicher Live-Gesundheitscheck. Sichtbare Statusdaten aktualisieren sich alle 15 Sekunden, außer bei geöffnetem Dialog, Speichern und Ziehen.
+There are no periodic paid model probes. Status reflects previous tests/requests and local restrictions; Ready is not continuous live monitoring. Visible status data refreshes every 15 seconds except during dialog editing, saving or dragging.
 
-- **Ingress 8099:** Verwaltung über Supervisor-Ingress, ohne veröffentlichte Host-Port-Zuordnung.
-- **API 8000:** `/v1/models` und `/v1/chat/completions` mit Bearer-Router-Schlüssel; `/health` als einfacher Erreichbarkeitstest. Keine Verwaltungsrouten auf diesem Port. Hostfreigabe ist optional und standardmäßig aus.
-- **Streaming:** Anbieterantworten werden vollständig gepuffert und anschließend als SSE ausgegeben. Es gibt keine tokenweise Live-Ausgabe; ein Fallback erfolgt nicht mitten in einem bereits übertragenen Tool-Aufruf.
-- **Backups:** Optionen, Router-Schlüssel und SQLite liegen unter `/data`. App-Daten sichern; Backups können Zugangsdaten enthalten.
-- **Netzwerk:** Cloudanfragen übertragen Prompt/Kontext an den gewählten Anbieter. Lokale Server müssen aus der App erreichbar sein. Für Zugriffe über nicht vertrauenswürdige Netze einen passenden HTTPS-Zugang einrichten.
-- **Schlüssel:** Die normale Einstellungsantwort enthält keine Schlüssel. Nur das geöffnete Profil lädt den ursprünglichen Eintrag; aufgelöste Secrets werden niemals ausgeliefert. Modellabfragen senden Zugangsdaten in Headern an das konfigurierte Ziel; Weiterleitungen sind gesperrt und fremde Fehlertexte werden nicht ausgegeben. LiteLLM-Telemetrie ist deaktiviert.
+- **Ingress 8099:** Administration through Supervisor ingress, without publishing a host port.
+- **API 8000:** `/v1/models` and `/v1/chat/completions` require the bearer router key; `/health` is a basic reachability endpoint. No management routes are exposed here. Host publication is optional and off by default.
+- **Streaming:** Upstream responses are fully buffered, then returned as SSE. There is no live token-by-token output; fallback cannot occur halfway through an already transmitted tool call.
+- **Backups:** Options, router key and SQLite live in `/data`. Include app data in backups; backups may contain credentials.
+- **Networking:** Cloud calls transmit prompts/context to the selected provider. Local servers must be reachable from the app. Use suitable HTTPS access over untrusted networks.
+- **Credentials:** The normal settings response omits keys. Only an opened editor fetches its original entry; resolved secrets are never returned. Model metadata requests send credentials in headers to the configured destination, block redirects and suppress upstream error bodies. LiteLLM telemetry is disabled.
 
-LiteLLM bleibt auf **1.106.6** mit Image-Digest festgelegt; beim Start wird die SDK-Version geprüft. **Versionsprüfung** fragt GitHub erst nach Klick ab, cached eine Stunde und installiert nichts. Eine neue Upstream-Version ersetzt die geprüfte Abhängigkeit nicht automatisch.
+LiteLLM remains pinned to **1.106.6** and its image digest; startup verifies the SDK version. **Version check** queries GitHub only after a click, caches for one hour and installs nothing. A newer upstream release does not automatically replace the reviewed dependency.
 
-## Unerwartete Anfragen im Leerlauf
+## Unexpected requests while idle
 
-Die App sendet keine automatischen Test-Prompts. Die UI-Aktualisierung liest lokale Daten; Modell- und Kontoabfragen verwenden Metadaten-Endpunkte, erzeugen keine Antworten und können dennoch API-Anfragelimits des Anbieters betreffen. **Testen** sendet nach Bestätigung einen echten Prompt mit maximal acht Ausgabetokens. Assist-Integrationen, Einrichtungsprüfungen oder Automationen können ebenfalls API-Anfragen auslösen. Ab v1.0.4 zeigt die Verbrauchsansicht **API** oder **Manueller Test**; ältere Einträge bleiben **Unbekannt**. Die App identifiziert damit nicht die konkrete aufrufende Integration. **≈** kennzeichnet eine konservative Reservierung, keinen bestätigten Verbrauch. Fehlgeschlagene Versuche ohne Verbrauchsangabe behalten diese Reservierung. Zum vollständigen Unterbinden alle Anbieter pausieren (laufende Anfragen können enden) oder die App stoppen. Zum Eingrenzen verbundene Integrationen und Automationen vorübergehend deaktivieren und prüfen, ob neue Einträge entstehen.
+The app sends no automatic test prompts. UI refresh reads local data; model/account lookups use metadata endpoints, generate no completions and can still affect provider API request limits. **Test** sends a real prompt with up to eight output tokens after confirmation. Assist integrations, setup validation or automations may also trigger API requests. Starting with v1.0.4, usage history distinguishes **API** from **Manual test**; older entries remain **Unknown**. This does not identify the specific calling integration. **≈** indicates a conservative reservation, not confirmed usage. Failed attempts without reported usage retain their reservation. Pause all providers (in-flight requests may finish) or stop the app to stop forwarding requests completely. Temporarily disable connected integrations and automations to isolate the caller.
 
-## Fehlerbehebung
+## Troubleshooting
 
-| Beobachtung | Vorgehen |
+| Symptom | Action |
 | --- | --- |
-| Keine Modellvorschläge | Schlüssel/URL vervollständigen, Feld verlassen, Modellfeld leeren oder tippen, Statushinweis prüfen; manuelle Eingabe nutzen. |
-| Neuer Secret-Verweis kann nicht aufgelöst werden | Profil mit `!secret name` und manuellem/SDK-Modell speichern, dann erneut öffnen. |
-| Kostenpflichtig gesperrt | Überprüfte Gratisnutzung bestätigen, lokales Profil markieren oder kostenpflichtige Profile ausdrücklich erlauben. |
-| Limit früher als erwartet | Reserve, konservative Schätzung, fehlgeschlagene Versuche und geteilte Kontingente berücksichtigen. |
-| Abkühlzeit nach Fortsetzen | Pause löscht keine Rate-Limit-Sperren; angezeigten Zeitpunkt abwarten. |
-| Abweichende Reihenfolge | Routing-Preset, Regeln, Fähigkeiten, lokale Sperren und direkte `provider:`-Aliase prüfen. |
-| HA erreicht Router nicht | Interne Adresse aus der Einrichtung verwenden; Ingress ist nicht die Modell-API. |
-| MCP Assist 404/401 | Servertyp OpenAI, URL ohne `/v1`, Router-Schlüssel statt Anbieterschlüssel prüfen. |
-| Alle Anbieter scheitern | Kontolimits, Netzwerk und Freigaben prüfen; unabhängige Anbieter/lokalen Fallback ergänzen. |
+| No model suggestions | Complete key/URL and leave the field, clear/type in the model field, read its status; manual entry remains available. |
+| New secret cannot load models | Save `!secret name` with a manual/SDK model, then reopen the profile. |
+| Paid profile blocked | Confirm checked free access, mark a local profile, or explicitly allow paid profiles. |
+| Limit reached earlier than expected | Account for reserve, conservative estimates, failed attempts and shared quotas. |
+| Cooldown after resume | Pause does not remove rate-limit restrictions; wait until the indicated time. |
+| Unexpected routing order | Check preset, rules, capabilities, local restrictions and direct provider aliases. |
+| HA cannot reach router | Use the internal setup address; ingress is not the model API. |
+| MCP Assist 404/401 | Check OpenAI type, URL without /v1 and router key instead of provider key. |
+| All providers fail | Check account limits, network and permissions; add independent providers/local fallback. |
 
-## Entwicklung und weitere Informationen
+## Development and further documentation
 
-[Konfiguration im Detail](assist_ai_router/DOCS.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.md) · [Entwicklung und Abnahme](CONTRIBUTING.md) · [Changelog](assist_ai_router/CHANGELOG.md) · [Weitere Home Assistant Apps](https://github.com/seb5594/Home-Assistant-Apps)
+[Detailed configuration](assist_ai_router/DOCS.en.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.en.md) · [Development and acceptance](CONTRIBUTING.md) · [Changelog](assist_ai_router/CHANGELOG.md) · [More Home Assistant Apps](https://github.com/seb5594/Home-Assistant-Apps)
 
-Automatisierte Tests prüfen Routing, Secrets, HTTP-Zugänge, Metadatenabfragen und die SDK-Anbindung. Die Abnahme mit echtem Home Assistant, Anbieter-Konten, Geräteaktionen, Browsern und Backup-Wiederherstellung ist zusätzlich nötig.
+Automated tests cover routing, secrets, HTTP boundaries, metadata discovery and SDK integration. Real Home Assistant, provider-account, device-action, browser and backup-restore acceptance remains separate.
 
-Der UI-Footer verlinkt das Projekt und weitere Apps und enthält **Support my work ☕** sowie „Application developed by seb5594 (Sebastian Schmidt) - Made with ♥ in Germany“ mit rotem Herz.
+The footer links this project and other apps, includes **Support my work ☕**, and displays “Application developed by seb5594 (Sebastian Schmidt) - Made with ♥ in Germany” with a red heart.
 
-Die MIT-Lizenz gilt für diesen Projektcode. LiteLLM und andere Drittkomponenten behalten ihre jeweiligen Lizenzen. Autor: **seb5594 (Sebastian Schmidt)**.
+[Support my work ☕](https://paypal.me/seb5594). Published under the [MIT License](LICENSE).
+
+Copyright (c) 2026 seb5594 (Sebastian Schmidt). LiteLLM and other third-party components retain their respective licenses.
 
 <!-- support:begin (generated, shared text) -->
 ## Say thanks
