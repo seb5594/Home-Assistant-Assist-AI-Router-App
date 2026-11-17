@@ -3,7 +3,7 @@ FROM ${BUILD_FROM}
 
 # renovate: datasource=pypi depName=litellm
 ARG LITELLM_VERSION=1.106.6
-RUN python -m pip install --no-cache-dir litellm==${LITELLM_VERSION}
+RUN python -m pip install --no-cache-dir litellm[proxy]==${LITELLM_VERSION}
 
 ARG BUILD_VERSION=1.0.5
 ARG BUILD_ARCH=amd64
