@@ -1,8 +1,8 @@
 <!-- header:begin (generated from project metadata) -->
 <h1 align="center">
-  Assist AI Router
-  <br>
   <img src="https://raw.githubusercontent.com/seb5594/Home-Assistant-Assist-AI-Router-App/dev/assist_ai_router/logo.png" alt="Assist AI Router" width="160" height="160">
+  <br>
+  Assist AI Router
 </h1>
 
 <p align="center">
@@ -12,13 +12,13 @@
   <img src="https://img.shields.io/static/v1?label=image%20pulls&amp;message=32&amp;color=1877A5&amp;style=for-the-badge" alt="image pulls" height="28"><br>
   <img src="https://img.shields.io/static/v1?label=stage&amp;message=stable&amp;color=2F855A&amp;style=flat" alt="stage" height="20">
   <img src="https://img.shields.io/static/v1?label=ingress&amp;message=enabled&amp;color=7C3AED&amp;style=flat" alt="ingress" height="20">
-  <img src="https://img.shields.io/static/v1?label=arch%20%26%20size&amp;message=amd64%20428.9%20%C2%B7%20aarch64%20436.7%20MiB&amp;color=157F71&amp;style=flat" alt="arch &amp; size" height="20"><br>
+  <img src="https://img.shields.io/static/v1?label=arch%20%26%20size&amp;message=amd64%20149.0%20%C2%B7%20aarch64%20147.4%20MiB&amp;color=157F71&amp;style=flat" alt="arch &amp; size" height="20"><br>
   <a href="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Assist-AI-Router-App/ci.yml?branch=dev&amp;label=checks&amp;style=flat" alt="checks" height="20"></a>
   <img src="https://img.shields.io/static/v1?label=runtime%20tests&amp;message=4%20passed&amp;color=2F855A&amp;style=flat" alt="runtime tests" height="20">
-  <a href="https://github.com/seb5594/Home-Assistant-Apps/issues"><img src="https://img.shields.io/github/issues/seb5594/Home-Assistant-Assist-AI-Router-App?label=issues&amp;style=flat" alt="issues" height="20"></a>
-  <a href="https://github.com/seb5594/Home-Assistant-Apps#license"><img src="https://img.shields.io/github/license/seb5594/Home-Assistant-Assist-AI-Router-App?label=license&amp;style=flat" alt="license" height="20"></a><br>
+  <a href="https://github.com/seb5594/Home-Assistant-Apps/issues"><img src="https://img.shields.io/github/issues/seb5594/Home-Assistant-Assist-AI-Router-App?label=issues&amp;style=flat" alt="issues" height="20"></a><br>
   <a href="https://paypal.me/seb5594"><img src="https://img.shields.io/static/v1?label=Support&amp;message=PayPal&amp;color=0070BA&amp;logo=paypal&amp;logoColor=white&amp;style=for-the-badge" alt="PayPal" height="24"></a>
-  <a href="https://buymeacoffee.com/seb5594"><img src="https://raw.githubusercontent.com/seb5594/Home-Assistant-Apps/473dc258f963096745aac327df54950eb9b59066/.github/assets/support-beer.svg" alt="Buy me a beer" height="24"></a>
+  <a href="https://buymeacoffee.com/seb5594"><img src="https://raw.githubusercontent.com/seb5594/Home-Assistant-Apps/473dc258f963096745aac327df54950eb9b59066/.github/assets/support-beer.svg" alt="Buy me a beer" height="24"></a><br>
+  <a href="https://github.com/seb5594/Home-Assistant-Apps#license"><img src="https://img.shields.io/github/license/seb5594/Home-Assistant-Assist-AI-Router-App?label=license&amp;style=flat" alt="license" height="20"></a>
 </p>
 <!-- header:end -->
 
