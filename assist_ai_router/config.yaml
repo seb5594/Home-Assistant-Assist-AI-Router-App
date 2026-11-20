@@ -4,8 +4,11 @@ slug: assist_ai_router
 description: Multi-provider AI gateway for Home Assistant Assist, powered by LiteLLM.
 url: https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App
 arch:
-- amd64
 - aarch64
+- amd64
+- armv7
+- armhf
+- i386
 homeassistant: 2026.8.0
 stage: stable
 startup: application
