@@ -2,7 +2,7 @@ ARG BUILD_FROM=ghcr.io/seb5594/home-assistant-base-python:3.14-alpine3.24-2026.1
 FROM ${BUILD_FROM}
 
 # renovate: datasource=pypi depName=litellm
-ARG LITELLM_VERSION=1.106.6
+ARG LITELLM_VERSION=1.110.2
 
 # renovate: datasource=pypi depName=mcp
 ARG MCP_VERSION=2.3.0
