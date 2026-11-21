@@ -1,7 +1,7 @@
 """Starter profiles. Availability and free allowances belong to each account, never inferred."""
 from .offers import offer
 
-VERSION = "2026.11.21"
+VERSION = "2026.11.21.1"
 LITELLM_VERSION = "1.110.2"
 
 # Prefixes are LiteLLM SDK providers; model suggestions are editable examples, not free-tier claims.
