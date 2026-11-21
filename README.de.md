@@ -6,7 +6,7 @@
 
 Assist AI Router bündelt verschiedene KI-Anbieter und lokale Modelle hinter einem authentifizierten, OpenAI-kompatiblen Endpunkt für Home Assistant Assist. Die App nutzt das enthaltene **LiteLLM SDK** für Modellanfragen und ergänzt eine eigene Routinglogik, Verbrauchserfassung und Ingress-Oberfläche. Anbieter, Modelle, Schlüssel, Prioritäten und Limits verwaltest du im Browser. Speichern übernimmt Änderungen in die App-Konfiguration und wendet sie sofort an.
 
-**App 2026.11.21 · LiteLLM 1.106.6 · Home Assistant ab 2026.8 · amd64 / aarch64.** Releases folgen dem Datumsschema `JJJJ.MM.TT`; der erste Build eines Tages hat keinen Zusatz, weitere Builds erhalten `.1`, `.2` und so weiter.
+**App 2026.11.21 · LiteLLM 1.110.2 · Home Assistant ab 2026.8 · amd64 / aarch64.** Releases folgen dem Datumsschema `JJJJ.MM.TT`; der erste Build eines Tages hat keinen Zusatz, weitere Builds erhalten `.1`, `.2` und so weiter.
 
 ## ✨ Funktionen
 
@@ -233,7 +233,7 @@ Es gibt keine regelmäßigen kostenpflichtigen Modelltests. Statusanzeigen stamm
 - **Netzwerk:** Cloudanfragen übertragen Prompt/Kontext an den gewählten Anbieter. Lokale Server müssen aus der App erreichbar sein. Für Zugriffe über nicht vertrauenswürdige Netze einen passenden HTTPS-Zugang einrichten.
 - **Schlüssel:** Die normale Einstellungsantwort enthält keine Schlüssel. Nur das geöffnete Profil lädt den ursprünglichen Eintrag; aufgelöste Secrets werden niemals ausgeliefert. Modellabfragen senden Zugangsdaten in Headern an das konfigurierte Ziel; Weiterleitungen sind gesperrt und fremde Fehlertexte werden nicht ausgegeben. LiteLLM-Telemetrie ist deaktiviert.
 
-LiteLLM bleibt auf **1.106.6** mit Image-Digest festgelegt; beim Start wird die SDK-Version geprüft. **Versionsprüfung** fragt GitHub erst nach Klick ab, cached eine Stunde und installiert nichts. Eine neue Upstream-Version ersetzt die geprüfte Abhängigkeit nicht automatisch.
+LiteLLM bleibt auf **1.110.2** mit Image-Digest festgelegt; beim Start wird die SDK-Version geprüft. **Versionsprüfung** fragt GitHub erst nach Klick ab, cached eine Stunde und installiert nichts. Eine neue Upstream-Version ersetzt die geprüfte Abhängigkeit nicht automatisch.
 
 ## 💤 Unerwartete Anfragen im Leerlauf
 
