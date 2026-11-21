@@ -1,6 +1,6 @@
 # Assist AI Router — English
 
-Version **2026.11.21** · LiteLLM **1.110.2** · Home Assistant **2026.8+**
+Version **2026.11.21.1** · LiteLLM **1.110.2** · Home Assistant **2026.8+**
 
 ## 🚀 Quick start
 

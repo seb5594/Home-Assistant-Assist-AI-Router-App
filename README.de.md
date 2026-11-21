@@ -6,7 +6,7 @@
 
 Assist AI Router bündelt verschiedene KI-Anbieter und lokale Modelle hinter einem authentifizierten, OpenAI-kompatiblen Endpunkt für Home Assistant Assist. Die App nutzt das enthaltene **LiteLLM SDK** für Modellanfragen und ergänzt eine eigene Routinglogik, Verbrauchserfassung und Ingress-Oberfläche. Anbieter, Modelle, Schlüssel, Prioritäten und Limits verwaltest du im Browser. Speichern übernimmt Änderungen in die App-Konfiguration und wendet sie sofort an.
 
-**App 2026.11.21 · LiteLLM 1.110.2 · Home Assistant ab 2026.8 · amd64 / aarch64.** Releases folgen dem Datumsschema `JJJJ.MM.TT`; der erste Build eines Tages hat keinen Zusatz, weitere Builds erhalten `.1`, `.2` und so weiter.
+**App 2026.11.21.1 · LiteLLM 1.110.2 · Home Assistant ab 2026.8 · amd64 / aarch64.** Releases folgen dem Datumsschema `JJJJ.MM.TT`; der erste Build eines Tages hat keinen Zusatz, weitere Builds erhalten `.1`, `.2` und so weiter.
 
 ## ✨ Funktionen
 

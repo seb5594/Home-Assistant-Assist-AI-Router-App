@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026.11.21.1
+
+* 📌 Align the reviewed LiteLLM pin with the runtime image and test dependency at 1.110.2.
+* 🩹 Fix the startup version check that rejected the 2026.11.21 image because the pin and the installed LiteLLM differed.
+
 ## 2026.11.21
 
 * 🎙️ Add a Wyoming speech-to-text gateway with automatic fallback: the first engine (default Speech-to-Phrase) is tried first and the identical recording is replayed to the second engine (default Whisper) when it returns no text, is unreachable or exceeds its time budget. Disabled by default; toggling applies without a restart.
@@ -7,7 +12,6 @@
 * 🧭 Add a **Speech input** page with engine check, status counters and Home Assistant connection values. Spoken text is never stored or logged.
 * 🔖 Switch release versioning to `YYYY.MM.DD`; the first build of a day has no suffix, further builds add `.1`, `.2` and so on.
 * ✨ Add emojis to documentation and headings, ☕🍺 to the support link and 🇩🇪 to the footer credit.
-* 📌 Align the reviewed LiteLLM pin with the runtime image and test dependency at 1.110.2.
 
 ## 1.0.5
 
