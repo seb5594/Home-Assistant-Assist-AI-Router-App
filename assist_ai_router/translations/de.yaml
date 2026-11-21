@@ -79,6 +79,18 @@ configuration:
     name: Aufbewahrung der Historie (Tage)
   gateway_url:
     name: Alternative Router-URL für die Einrichtung
+  stt_enabled:
+    name: Speech-to-Text mit Fallback aktivieren
+  stt_primary:
+    name: Erste Engine (Wyoming-Adresse)
+  stt_fallback:
+    name: Zweite Engine als Fallback (Wyoming-Adresse)
+  stt_primary_timeout:
+    name: Zeitbudget der ersten Engine (Sekunden)
+  stt_fallback_timeout:
+    name: Zeitbudget der zweiten Engine (Sekunden)
 network:
   8000/tcp:
     name: Router-Basis-URL
+  10300/tcp:
+    name: Wyoming-Speech-to-Text-Gateway

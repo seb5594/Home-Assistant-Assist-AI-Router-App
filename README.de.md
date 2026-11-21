@@ -6,23 +6,24 @@
 
 Assist AI Router bündelt verschiedene KI-Anbieter und lokale Modelle hinter einem authentifizierten, OpenAI-kompatiblen Endpunkt für Home Assistant Assist. Die App nutzt das enthaltene **LiteLLM SDK** für Modellanfragen und ergänzt eine eigene Routinglogik, Verbrauchserfassung und Ingress-Oberfläche. Anbieter, Modelle, Schlüssel, Prioritäten und Limits verwaltest du im Browser. Speichern übernimmt Änderungen in die App-Konfiguration und wendet sie sofort an.
 
-**App v1.0.4 · LiteLLM 1.106.6 · Home Assistant ab 2026.8 · amd64 / aarch64.** Ab dieser Ausgabe gilt das Versionsschema `MAJOR.MINOR.PATCH`. Frühere Datums-Releases bleiben im Changelog erhalten.
+**App 2026.11.21 · LiteLLM 1.106.6 · Home Assistant ab 2026.8 · amd64 / aarch64.** Releases folgen dem Datumsschema `JJJJ.MM.TT`; der erste Build eines Tages hat keinen Zusatz, weitere Builds erhalten `.1`, `.2` und so weiter.
 
-## Funktionen
+## ✨ Funktionen
 
-- Bis zu **100 Anbieterprofile**, jeweils mit Modell, Schlüssel, Endpunkt und Limits; mehrere Profile desselben Anbieters sind möglich.
-- **Nummerierte Liste untereinander** in Übersicht und Anbieteransicht, per Ziehgriff ⠿ oder ↑/↓ sortierbar. Änderungen werden sofort gespeichert.
-- **Pausieren/Fortsetzen**, ohne Zugangsdaten, Position, Regeln oder Verbrauch zu verlieren.
-- Automatische Modellvorschläge direkt im Feld **LLM-Modell**, ergänzt durch SDK-Vorschläge und manuelle Eingabe.
-- Vier Routing-Presets, eigene Alias-/Tool-Regeln, Ausweichanbieter und persistente Abkühlzeiten.
-- Lokale Kontingentkontrolle mit Reservierungen für parallele Anfragen, gemeinsamen Kontingentgruppen und Sicherheitsreserve.
-- Eingabe-/Ausgabe-/Gesamttokens, Status, Dauer und Request-ID pro API-Versuch sowie CSV-Export.
-- Geführte Einrichtung der nativen **LiteLLM-Integration** oder von **MCP Assist aus HACS**.
-- Deutsche und englische Oberfläche sowie eine festgelegte LiteLLM-Version mit Image-Digest und optionalem Versionscheck.
+- 🧩 Bis zu **100 Anbieterprofile**, jeweils mit Modell, Schlüssel, Endpunkt und Limits; mehrere Profile desselben Anbieters sind möglich.
+- 🔢 **Nummerierte Liste untereinander** in Übersicht und Anbieteransicht, per Ziehgriff ⠿ oder ↑/↓ sortierbar. Änderungen werden sofort gespeichert.
+- ⏸️ **Pausieren/Fortsetzen**, ohne Zugangsdaten, Position, Regeln oder Verbrauch zu verlieren.
+- 🤖 Automatische Modellvorschläge direkt im Feld **LLM-Modell**, ergänzt durch SDK-Vorschläge und manuelle Eingabe.
+- 🔀 Vier Routing-Presets, eigene Alias-/Tool-Regeln, Ausweichanbieter und persistente Abkühlzeiten.
+- 📏 Lokale Kontingentkontrolle mit Reservierungen für parallele Anfragen, gemeinsamen Kontingentgruppen und Sicherheitsreserve.
+- 📊 Eingabe-/Ausgabe-/Gesamttokens, Status, Dauer und Request-ID pro API-Versuch sowie CSV-Export.
+- 🎙️ **Speech-to-Text-Fallback:** erst Speech-to-Phrase, bei „nichts erkannt“ automatisch Whisper, als ein einziger Wyoming-Dienst für Assist.
+- 🔗 Geführte Einrichtung der nativen **LiteLLM-Integration** oder von **MCP Assist aus HACS**.
+- 🌍 Deutsche und englische Oberfläche sowie eine festgelegte LiteLLM-Version mit Image-Digest und optionalem Versionscheck.
 
 Die App bildet die hier beschriebenen Funktionen ab. Sie ist keine Oberfläche für sämtliche Einstellungen des vollständigen LiteLLM-Proxys: Teams, virtuelle LiteLLM-Schlüssel, externe Abrechnung und alle SDK-/Proxyparameter sind nicht als App-Optionen verfügbar.
 
-## Installation und Schnellstart
+## 🚀 Installation und Schnellstart
 
 1. Öffne das [Home-Assistant-App-Repository](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps) oder füge `https://github.com/seb5594/Home-Assistant-Apps` im App-Store als Repository hinzu. Du benötigst eine HA-Installation mit Supervisor/App-Unterstützung.
 2. Installiere und starte **Assist AI Router** und öffne die Weboberfläche. LiteLLM ist enthalten; kein separater Proxy muss installiert werden.
@@ -33,7 +34,7 @@ Die App bildet die hier beschriebenen Funktionen ab. Sie ist keine Oberfläche f
 
 **Verbindung testen** sendet eine kurze echte Modellanfrage. Dabei können Tokens, Anfragenkontingent und gegebenenfalls Kosten anfallen. Eine erfolgreiche Textantwort beweist nicht die Qualität der Tool-Aufrufe oder Gerätesteuerung.
 
-## Anbieter und Modelle
+## 🧩 Anbieter und Modelle
 
 ### 21 Vorlagen
 
@@ -95,7 +96,7 @@ Für weitere Vorlagen bleibt der Tarif unbekannt, wenn der normale API-Schlüsse
 
 OpenRouter kann den Free-Tier-Status, das verbleibende Schlüssel-Ausgabelimit und gegebenenfalls tägliche Gratis-Modellanfragen liefern. DeepSeek liefert verfügbare, gewährte und gekaufte Geldbeträge. Diese Kontodaten sind bis zu fünf Minuten zwischengespeichert und von den lokalen Router-Zählern getrennt. Geld wird nicht in Tokens umgerechnet. Lokale Limits und Kostenfreigaben ändern sich nicht automatisch. Bei passenden Groq-/Cerebras-Modellen kannst du ein **dokumentiertes Limitbeispiel** ins Formular übernehmen, mit deinem Konto abgleichen und speichern. Zusätzliche Stunden- und andere nicht abgebildete Limits werden weiterhin vom Anbieter durchgesetzt.
 
-## Reihenfolge, Pausen und Schlüssel
+## 🔢 Reihenfolge, Pausen und Schlüssel
 
 Positionsnummern zeigen die **gespeicherte Profilreihenfolge**, einschließlich pausierter Profile. Am Griff ⠿ vor/hinter ein Profil ziehen oder die Pfeil-Buttons verwenden. Die Reihenfolge bestimmt das Preset **Feste Priorität**; andere Presets können sie umsortieren. Auch in der Übersicht sind die Profile untereinander angeordnet.
 
@@ -109,7 +110,7 @@ Webänderungen werden über Supervisor in den App-Optionen gespeichert, einschli
 
 Mit **Anbieter löschen** kannst du ein Profil nach Bestätigung dauerhaft aus Übersicht oder Anbieteransicht entfernen. Es wird aus Routingregeln ausgetragen; leere Regeln werden gelöscht. Bisherige Verbrauchsdatensätze bleiben für die Kontingentabrechnung erhalten. Zum vorübergehenden Abschalten stattdessen Pausieren verwenden.
 
-## Routing und Fallbacks
+## 🔀 Routing und Fallbacks
 
 | Preset | Auswahl |
 | --- | --- |
@@ -147,7 +148,7 @@ Eine optionale **Auffangregel** mit Alias `*`, ohne Tool-Bedingung und erlaubten
 
 Die Auswahlreihenfolge der Checkboxen erzeugt keine zusätzliche Priorität. Im Beispiel geht Groq vor Gemini, weil die globale Liste so sortiert ist. Andere Routing-Presets können die Startposition ändern. Regeln prüfen keine Prompttexte, Uhrzeiten oder Wörter; unterstützt sind Alias, Tool-Bedingung und Profilmenge.
 
-## Verbrauch und Kontingente
+## 📊 Verbrauch und Kontingente
 
 Die Anzeige erfasst **lokal beobachteten Verbrauch dieses Routers**, keine universell verifizierten Anbieter-Guthaben. Nutzung durch andere Apps ist unbekannt. Die Anbieterportale sind verlinkt.
 
@@ -166,7 +167,7 @@ SQLite reserviert vor jedem API-Versuch geschätzte Eingabe plus maximale Ausgab
 
 **Verbrauch** zeigt die letzten 100 tatsächlichen API-Versuche mit Profil, Request-ID, Zeit, Tokens, Dauer und Ergebnis. Fallbacks derselben Routeranfrage teilen die Request-ID. Ein Dialog mit mehreren Tool-Schritten kann mehrere Routeranfragen und IDs erzeugen. CSV enthält zusätzlich geschätzte Kosten. Prompts, Antworten und ausführbare Tool-Argumente werden nicht in der Verbrauchsdatenbank gespeichert.
 
-## Home Assistant Assist verbinden
+## 🔗 Home Assistant Assist verbinden
 
 ### Native LiteLLM-Integration
 
@@ -185,7 +186,31 @@ Wähle den Servertyp **OpenAI**, die Router-URL **ohne abschließendes `/v1`**, 
 
 Die [MCP-Assist-Anleitung](assist_ai_router/MCP_ASSIST.md) beschreibt Freigaben, Einrichtung und Fehlerbehebung für die geprüfte 0.17.2-Anbindung. [MCP Assist](https://github.com/mike-nott/mcp-assist) ist ein alternativer Konversationsagent. Die separat verlinkten nativen HA-MCP-Client/-Server-Integrationen sind dafür nicht pauschal nötig. Die App installiert nichts im Hintergrund und verändert keine HA-`.storage`-Dateien.
 
-## Allgemeine Einstellungen und Betrieb
+## 🎙️ Speech-to-Text mit Fallback
+
+Assist kann eine fehlgeschlagene Speech-to-Phrase-Erkennung nicht von selbst an Whisper weiterreichen. Der Router kann sich vor beide Dienste setzen und erscheint in Home Assistant als **ein** Wyoming-Speech-to-Text-Dienst:
+
+1. Assist schickt den Sprachbefehl an den Router (Port 10300).
+2. Das Audio wird live an die **erste Engine** gestreamt, standardmäßig die offizielle App *Speech-to-Phrase* (`core_speech-to-phrase`, gepflegt von der Open Home Foundation in [OHF-Voice/speech-to-phrase](https://github.com/OHF-Voice/speech-to-phrase)). Der Router behält eine Kopie im Arbeitsspeicher.
+3. Liefert die erste Engine keinen Text, ist nicht erreichbar oder überschreitet ihr Zeitbudget, wird exakt dieselbe Aufnahme an die **zweite Engine** gesendet, standardmäßig die offizielle App *Whisper* (`core_whisper`).
+4. Assist erhält genau ein Transkript.
+
+**Einrichtung:** Beide Engine-Apps installieren und starten, **Spracheingabe** öffnen, die beiden Adressen mit **Engines prüfen** testen, den Dienst aktivieren und speichern. Home Assistant meldet „Assist AI Router“ als entdecktes Wyoming-Gerät (Einstellungen → Geräte & Dienste); andernfalls **Wyoming Protocol** manuell mit Host und Port von der Seite hinzufügen. Danach im Sprachassistenten als Speech-to-Text auswählen. Statt der Vorgaben lässt sich jeder andere Wyoming-Speech-to-Text-Dienst verwenden.
+
+| Option | Standard | Wirkung |
+| --- | --- | --- |
+| `stt_enabled` | Aus | Lauscht nur im aktivierten Zustand auf Port 10300; Umschalten wirkt sofort |
+| `stt_primary` | `tcp://core-speech-to-phrase:10300` | Erste Engine |
+| `stt_fallback` | `tcp://core-whisper:10300` | Zweite Engine |
+| `stt_primary_timeout` | 8 s | Wartezeit auf die erste Engine nach Ende der Aufnahme |
+| `stt_fallback_timeout` | 45 s | Zeitbudget der zweiten Engine |
+
+- Wyoming-Transkripte enthalten **keinen Konfidenzwert**. „Kein Text“ ist daher das Signal, dass die erste Engine nichts verstanden hat. Eine erkannte, aber falsche Phrase lässt sich nicht erkennen.
+- Home Assistant bekommt die Modelle und Sprachen beider Engines angeboten. Kennt nur die zweite Engine die gesprochene Sprache, wird die erste übersprungen. Die zuletzt bekannten Fähigkeiten liegen in `/data`, sodass Home Assistant beide Engines auch sieht, wenn eine noch nicht läuft.
+- Audio liegt nur während der Verarbeitung eines Sprachbefehls im Arbeitsspeicher (höchstens 8 MiB, etwa vier Minuten). Gesprochener Text wird weder gespeichert noch protokolliert; die Seite zeigt nur Ergebnis, Sprache und Dauer seit dem App-Start.
+- Wie andere Wyoming-Apps hat der Dienst keine Authentifizierung. Port 10300 wird nur veröffentlicht, wenn du es in den Netzwerkeinstellungen einstellst.
+
+## ⚙️ Allgemeine Einstellungen und Betrieb
 
 | Einstellung | Standard | Wirkung |
 | --- | --- | --- |
@@ -210,11 +235,11 @@ Es gibt keine regelmäßigen kostenpflichtigen Modelltests. Statusanzeigen stamm
 
 LiteLLM bleibt auf **1.106.6** mit Image-Digest festgelegt; beim Start wird die SDK-Version geprüft. **Versionsprüfung** fragt GitHub erst nach Klick ab, cached eine Stunde und installiert nichts. Eine neue Upstream-Version ersetzt die geprüfte Abhängigkeit nicht automatisch.
 
-## Unerwartete Anfragen im Leerlauf
+## 💤 Unerwartete Anfragen im Leerlauf
 
 Die App sendet keine automatischen Test-Prompts. Die UI-Aktualisierung liest lokale Daten; Modell- und Kontoabfragen verwenden Metadaten-Endpunkte, erzeugen keine Antworten und können dennoch API-Anfragelimits des Anbieters betreffen. **Testen** sendet nach Bestätigung einen echten Prompt mit maximal acht Ausgabetokens. Assist-Integrationen, Einrichtungsprüfungen oder Automationen können ebenfalls API-Anfragen auslösen. Ab v1.0.4 zeigt die Verbrauchsansicht **API** oder **Manueller Test**; ältere Einträge bleiben **Unbekannt**. Die App identifiziert damit nicht die konkrete aufrufende Integration. **≈** kennzeichnet eine konservative Reservierung, keinen bestätigten Verbrauch. Fehlgeschlagene Versuche ohne Verbrauchsangabe behalten diese Reservierung. Zum vollständigen Unterbinden alle Anbieter pausieren (laufende Anfragen können enden) oder die App stoppen. Zum Eingrenzen verbundene Integrationen und Automationen vorübergehend deaktivieren und prüfen, ob neue Einträge entstehen.
 
-## Fehlerbehebung
+## 🛠️ Fehlerbehebung
 
 | Beobachtung | Vorgehen |
 | --- | --- |
@@ -228,12 +253,12 @@ Die App sendet keine automatischen Test-Prompts. Die UI-Aktualisierung liest lok
 | MCP Assist 404/401 | Servertyp OpenAI, URL ohne `/v1`, Router-Schlüssel statt Anbieterschlüssel prüfen. |
 | Alle Anbieter scheitern | Kontolimits, Netzwerk und Freigaben prüfen; unabhängige Anbieter/lokalen Fallback ergänzen. |
 
-## Entwicklung und weitere Informationen
+## 📚 Entwicklung und weitere Informationen
 
 [Konfiguration im Detail](assist_ai_router/DOCS.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.md) · [Entwicklung und Abnahme](CONTRIBUTING.md) · [Changelog](assist_ai_router/CHANGELOG.md) · [Weitere Home Assistant Apps](https://github.com/seb5594/Home-Assistant-Apps)
 
-Automatisierte Tests prüfen Routing, Secrets, HTTP-Zugänge, Metadatenabfragen und die SDK-Anbindung. Die Abnahme mit echtem Home Assistant, Anbieter-Konten, Geräteaktionen, Browsern und Backup-Wiederherstellung ist zusätzlich nötig.
+Automatisierte Tests prüfen Routing, Secrets, HTTP-Zugänge, Metadatenabfragen, das Sprach-Gateway und die SDK-Anbindung. Die Abnahme mit echtem Home Assistant, Anbieter-Konten, Geräteaktionen, Browsern und Backup-Wiederherstellung ist zusätzlich nötig.
 
-Der UI-Footer verlinkt das Projekt und weitere Apps und enthält **Support my work ☕** sowie „Application developed by seb5594 (Sebastian Schmidt) - Made with ♥ in Germany“ mit rotem Herz.
+Der UI-Footer verlinkt das Projekt und weitere Apps und enthält **Support my work ☕🍺** sowie „Application developed by seb5594 (Sebastian Schmidt) - Made with ♥ in Germany 🇩🇪“ mit rotem Herz.
 
 Die MIT-Lizenz gilt für diesen Projektcode. LiteLLM und andere Drittkomponenten behalten ihre jeweiligen Lizenzen. Autor: **seb5594 (Sebastian Schmidt)**.

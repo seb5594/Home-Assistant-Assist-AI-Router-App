@@ -1,8 +1,8 @@
 # Assist AI Router — Deutsch
 
-Version **1.0.5** · LiteLLM **1.106.6** · Home Assistant **2026.8+**
+Version **2026.11.21** · LiteLLM **1.106.6** · Home Assistant **2026.8+**
 
-## In fünf Schritten zu Assist
+## 🚀 In fünf Schritten zu Assist
 
 1. App installieren, starten und **Weboberfläche öffnen** wählen. Es ist keine weitere LiteLLM-Installation nötig.
 2. Unter **Anbieter** eine Vorlage auswählen. Schlüssel im Formular eintragen, Modell prüfen und speichern. Danach **Verbindung testen**. Der Test sendet eine kurze echte Anfrage.
@@ -12,7 +12,7 @@ Version **1.0.5** · LiteLLM **1.106.6** · Home Assistant **2026.8+**
 
 Home Assistant erreicht die API über den internen App-Hostnamen auf Port 8000. Der Assistent liest diesen Hostnamen vom Supervisor. `/v1/models` stellt `assist-auto`, eigene Regel-Aliase und `provider:<Profil-ID>` bereit. Profile mit `provider:` sind zum gezielten Testen gedacht und haben keinen Anbieter-Fallback. Für Assist normalerweise `assist-auto` wählen.
 
-## Anbieter und Secrets
+## 🔐 Anbieter und Secrets
 
 Auf den Anbieterkarten in **Übersicht** und **Anbieter** kannst du mit **Pausieren/Fortsetzen** ein Profil vorübergehend aus dem Routing nehmen. Die Pause bleibt bis zum manuellen Fortsetzen bestehen, auch nach Neustarts. Schlüssel, Reihenfolge, Regeln und Verbrauch bleiben erhalten. Neue Anfragen überspringen das Profil; laufende Anfragen können noch abschließen. Bestehende Limits und Abkühlzeiten gelten beim Fortsetzen weiterhin.
 
@@ -34,7 +34,7 @@ Vorlagen decken Google AI Studio, Groq, Cerebras, OpenRouter, Mistral, Hugging F
 
 Markiere **kostenlose Nutzung bestätigt** nur für ein tatsächlich kostenloses Modell/Kontingent. Die App überprüft deinen Tarif nicht und kann Rechnungen eines Anbieters nicht unterbinden. Kostenpflichtig markierte Profile sind standardmäßig gesperrt. Lokale Modelle brauchen eine erreichbare URL und müssen für Gerätesteuerung Tool-Aufrufe unterstützen. Ein „Verbindungstest erfolgreich“ bestätigt die Textverbindung; die tatsächliche Werkzeugqualität hängt vom Modell ab.
 
-## Routing
+## 🔀 Routing
 
 | Preset | Verhalten |
 | --- | --- |
@@ -47,7 +47,7 @@ Eigene Regeln treffen anhand des Modellalias und optional vorhandener Tools eine
 
 Bei 429, Authentifizierungsfehlern, nicht verfügbaren Modellen, Netzwerkfehlern und 5xx versucht der Router das nächste geeignete Profil. Anbieter-Cooldowns und `Retry-After` verhindern sofortige Wiederholungen. Gemeinsame Kontingentgruppen teilen 429-Cooldowns. Andere fehlerhafte Anfragen werden nicht beliebig erneut gesendet. Kontextfehler können auf ein anderes Profil ausweichen; Nachrichten werden nicht gekürzt und Assist-Werkzeuge nicht entfernt. Zeitbudget und maximale Versuche begrenzen die Suche. Die HTTP-Timeouts werden an LiteLLM weitergereicht; Netzwerkphasen können die Gesamtdauer beeinflussen.
 
-## Kontingente und Verbrauch
+## 📊 Kontingente und Verbrauch
 
 RPM, TPM, Tagesanfragen, Tages-/Monatstokens, Kontextfenster und ein Monatsbudget lassen sich pro Profil einstellen. **0 bedeutet keine lokale Begrenzung / unbekannt**, kein unbegrenztes Gratis-Kontingent. Eine Sicherheitsreserve bleibt frei. Vor dem Aufruf reserviert SQLite unter einer Sperre die voraussichtlichen Tokens, sodass parallele Anfragen sich nicht dasselbe lokale Kontingent zusagen.
 
@@ -57,27 +57,31 @@ Anbieter, Basis-URL und Schlüssel bilden automatisch eine gemeinsame Zählergru
 
 Das Dashboard zeigt lokal erfassten Verbrauch und verlinkt echte Anbieterportale. Es behauptet keinen verifizierten Restguthabenstand. In **Verbrauch** siehst du Eingabe-/Ausgabe-/Gesamttokens, Dauer, Anfrage-ID und alle Versuche eines Fallbacks. CSV enthält auch geschätzte USD-Kosten aus manuell angegebenen Preisen. Die Tabelle zeigt die letzten 100 Versuche, die Datenbank hält die eingestellte Historie; aktuelle Monatszähler bleiben mindestens bis Monatsende erhalten. Es werden keine Prompts, Antworten oder ausführbaren Tool-Argumente gespeichert.
 
-## MCP und Integrationen
+## 🎙️ Speech-to-Text-Fallback
+
+Aktiviere ihn auf der Seite **Spracheingabe**. Der Router lauscht dann auf Port 10300 als Wyoming-Speech-to-Text-Dienst, streamt jeden Sprachbefehl an die erste Engine (Standard `tcp://core-speech-to-phrase:10300`) und sendet dieselbe Aufnahme an die zweite Engine (Standard `tcp://core-whisper:10300`), wenn die erste keinen Text liefert, nicht erreichbar oder zu langsam ist. Home Assistant entdeckt ihn als Wyoming-Gerät „Assist AI Router“; andernfalls manuell mit Host und Port von der Seite hinzufügen. Wyoming liefert keinen Konfidenzwert, deshalb löst nur „kein Text“ den Fallback aus. Gesprochener Text wird nie gespeichert. Details und Optionen stehen in der [README](../README.de.md).
+
+## 🔌 MCP und Integrationen
 
 Für die HACS-Integration **MCP Assist von mike-nott** gibt es unter **Assist verbinden** einen eigenen auswählbaren Einrichtungsweg. Er öffnet das HACS-Repository und das richtige Integrationsformular und zeigt eine angepasste Router-URL **ohne `/v1`**, den Router-Schlüssel, `assist-auto` und einen Timeout-Vorschlag. In MCP Assist wählst du **OpenAI** als kompatiblen Servertyp und ersetzt die vorbelegte Cloud-Adresse durch die Router-Adresse. Siehe die [vollständige MCP-Assist-Anleitung](MCP_ASSIST.md) einschließlich Entitätsfreigaben, Gratis-Kontingent-Einstellungen und Fehlerbehebung. MCP Assist kann anstelle des nativen LiteLLM-Konversationsagenten verwendet werden.
 
 Die **native LiteLLM-Integration** ist die Assist-Anbindung. MCP ist optional: der HA-MCP-Client bindet externe Werkzeuge ein, der HA-MCP-Server stellt Home Assistant externen Clients bereit. **Assist verbinden** öffnet dafür die offiziellen Formulare. Die App vergibt keine Entitätenrechte und verändert keine Dateien oder `.storage`-Einträge. OAuth und Werkzeugfreigaben erfolgen in Home Assistant.
 
-## Betrieb und Updates
+## ⚙️ Betrieb und Updates
 
 Die Verwaltung lauscht auf Ingress-Port 8099 und akzeptiert im Produktivbetrieb ausschließlich den Supervisor-Ingress-Peer `172.30.32.2`. Dieser Port wird nicht am Host veröffentlicht. Der KI-Endpunkt auf 8000 verlangt einen zufällig erzeugten Router-Schlüssel; er enthält keine Verwaltungsrouten. Ein Host-Port ist optional und standardmäßig deaktiviert. Direkter Zugriff über ein unverschlüsseltes fremdes Netzwerk sollte über einen eigenen HTTPS-Reverse-Proxy erfolgen. Die Ingress-Verwaltung ist für vertrauenswürdige HA-Benutzer gedacht.
 
 SQLite, Konfiguration und Router-Schlüssel liegen in `/data` und gehören in dein App-Backup. Backups können Zugangsdaten enthalten. Das Image basiert auf dem exakten offiziellen LiteLLM-Release-Tag mit dessen eingefrorenen Abhängigkeiten; die App prüft die installierte SDK-Version beim Start. Das vollständige Upstream-Image ist entsprechend größer als eine reine SDK-Installation. Keine Telemetrie, keine automatischen kostenpflichtigen Healthchecks, kein Redis/Postgres erforderlich.
 
-**Auf neue stabile Version prüfen** fragt GitHub erst nach Klick ab und cached das Ergebnis eine Stunde. Die App installiert dabei nichts. Upgrades erhalten eine neue getestete App-Version. Ab v1.0.0 gilt semantische Versionierung (`MAJOR.MINOR.PATCH`) statt der bisherigen Datums-Versionen.
+**Auf neue stabile Version prüfen** fragt GitHub erst nach Klick ab und cached das Ergebnis eine Stunde. Die App installiert dabei nichts. Upgrades erhalten eine neue getestete App-Version. Die Versionen folgen dem Datumsschema `JJJJ.MM.TT`; ein weiterer Build am selben Tag erhält den Zusatz `.1`, `.2` und so weiter.
 
 Wenn alle erlaubten Anbieter erschöpft oder ausgefallen sind, antwortet der Router mit HTTP 503 und `no_provider_available`. Unbegrenzte Cloud-Antworten sind damit nicht garantiert. Für die höchste Verfügbarkeit ergänze ein lokal laufendes, Assist-taugliches Modell.
 
-## Vor einem stabilen Release prüfen
+## ✅ Vor einem stabilen Release prüfen
 
 Die Softwaretests ersetzen keinen Praxistest auf Home Assistant OS: amd64/aarch64 installieren; Ingress und Schutzmodus prüfen; Speichern mit echtem `!secret` inklusive Neustart prüfen; native LiteLLM-Einrichtung und Assist-Gerätesteuerung mit Tool-Aufrufen testen; echte 429/Retry-After-Szenarien mehrerer Anbieter und Backup-Wiederherstellung prüfen. Visuelle Browserprüfung und reale Anbieter-/HA-Tests sind gesondert zu protokollieren.
 
-## Quellen
+## 📚 Quellen
 
 * [Home Assistant LiteLLM](https://www.home-assistant.io/integrations/litellm/)
 * [App-Optionen und Secrets](https://contributors.home-assistant.io/apps/guides/options/)
@@ -85,6 +89,6 @@ Die Softwaretests ersetzen keinen Praxistest auf Home Assistant OS: amd64/aarch6
 * [LiteLLM-Routing](https://docs.litellm.ai/docs/routing)
 * [Gepinntes LiteLLM-Release](https://github.com/BerriAI/litellm/releases/tag/v1.106.6)
 
-## API-Tarife und Regelbeispiele
+## 📋 API-Tarife und Regelbeispiele
 
 Die [deutsche README](../README.de.md) enthält konkrete Alias-/Tool-/Auffangregeln sowie eine datierte Tabelle offizieller Tarif-/Limitquellen. Die Anbieteransicht unterscheidet dokumentierte Beispiele von OpenRouter-/DeepSeek-Kontodaten. Geldbeträge sind keine Tokenlimits; unbekannte Werte bleiben unbekannt. Beispiel-Limits werden nur per Klick ins Formular übernommen.

@@ -29,23 +29,24 @@
 
 Assist AI Router combines cloud providers and local models behind an authenticated OpenAI-compatible endpoint. The app uses the included **LiteLLM SDK** for model requests and adds its own routing, usage accounting and ingress interface. Manage profiles, keys, models, priorities and limits in your browser. Saving writes to the app configuration and applies changes immediately.
 
-**App v1.0.4 · LiteLLM 1.106.6 · Home Assistant 2026.8+ · amd64 / aarch64.** This release switches to `MAJOR.MINOR.PATCH` versioning. Previous calendar releases remain in the changelog.
+**App 2026.11.21 · LiteLLM 1.106.6 · Home Assistant 2026.8+ · amd64 / aarch64.** Releases use the calendar scheme `YYYY.MM.DD`; the first build of a day has no suffix, further builds add `.1`, `.2` and so on.
 
-## Features
+## ✨ Features
 
-- Up to **100 provider profiles**, each with a model, credential, endpoint and limits; multiple profiles per provider are supported.
-- **Numbered vertical lists** on Overview and Providers. Reorder using the ⠿ drag handle or ↑/↓ buttons; changes save immediately.
-- **Pause/resume** without losing keys, position, rules or usage.
-- Automatically loaded model suggestions directly in the **LLM model** field, with SDK suggestions and manual entry as fallbacks.
-- Four routing presets, custom alias/tool rules, provider fallback and persistent cooldowns.
-- Local quota enforcement with reservations for concurrent requests, shared quota groups and a safety reserve.
-- Input/output/total tokens, status, duration and request ID per API attempt, plus CSV export.
-- Guided setup for the native **LiteLLM integration** or **HACS MCP Assist**.
-- German/English interface, a pinned LiteLLM image tag/digest and an optional stable-release check.
+- 🧩 Up to **100 provider profiles**, each with a model, credential, endpoint and limits; multiple profiles per provider are supported.
+- 🔢 **Numbered vertical lists** on Overview and Providers. Reorder using the ⠿ drag handle or ↑/↓ buttons; changes save immediately.
+- ⏸️ **Pause/resume** without losing keys, position, rules or usage.
+- 🤖 Automatically loaded model suggestions directly in the **LLM model** field, with SDK suggestions and manual entry as fallbacks.
+- 🔀 Four routing presets, custom alias/tool rules, provider fallback and persistent cooldowns.
+- 📏 Local quota enforcement with reservations for concurrent requests, shared quota groups and a safety reserve.
+- 📊 Input/output/total tokens, status, duration and request ID per API attempt, plus CSV export.
+- 🎙️ **Speech-to-text fallback:** Speech-to-Phrase first, Whisper automatically if nothing was recognized, as one Wyoming service for Assist.
+- 🔗 Guided setup for the native **LiteLLM integration** or **HACS MCP Assist**.
+- 🌍 German/English interface, a pinned LiteLLM image tag/digest and an optional stable-release check.
 
 This app exposes the settings documented here. It does not expose every feature of the full LiteLLM proxy administration system: teams, LiteLLM virtual keys, external billing and all SDK/proxy parameters are not available as app options.
 
-## Installation and quick start
+## 🚀 Installation and quick start
 
 1. Open the [Home Assistant app repository link](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps), or add `https://github.com/seb5594/Home-Assistant-Apps` in the app store repository settings. A Home Assistant installation with Supervisor/app support is required.
 2. Install/start **Assist AI Router** and open its web UI. LiteLLM is included; no separate proxy installation is necessary.
@@ -56,7 +57,7 @@ This app exposes the settings documented here. It does not expose every feature 
 
 **Test connection** sends a short real model request. It can consume tokens, request allowances and potentially money. A text response does not prove tool-calling quality or device-control reliability.
 
-## Provider templates and models
+## 🧩 Provider templates and models
 
 | Template | LiteLLM prefix | Direct model listing |
 | --- | --- | --- |
@@ -116,7 +117,7 @@ Other templates retain an unknown plan where a normal API key does not expose a 
 
 OpenRouter can return free-tier status, remaining key spending cap and, where supplied, daily free-model requests. DeepSeek reports available, granted and purchased funds. Account metadata is cached for up to five minutes and kept separate from local router counters. Money is never converted to tokens. Local limits and cost permissions never change automatically. Matching Groq/Cerebras models offer **Apply documented limit example**: compare with your actual account, then save. Additional hourly and other unrepresented restrictions remain enforced by the provider.
 
-## Order, pauses and credentials
+## 🔢 Order, pauses and credentials
 
 Position numbers represent the **saved profile order**, including paused profiles. Drag the ⠿ handle before/after a profile or use the arrow buttons. **Fixed priority** uses this order; other presets may sort differently. Overview also displays profiles vertically.
 
@@ -130,7 +131,7 @@ Web changes are saved through Supervisor to the app options, preserving raw secr
 
 Use **Delete provider** on Overview or Providers to remove a profile after confirmation. Its routing-rule references and any resulting empty rules are removed. Existing usage records remain for quota accounting. Use Pause for temporary disabling.
 
-## Routing and fallback
+## 🔀 Routing and fallback
 
 | Preset | Selection |
 | --- | --- |
@@ -168,7 +169,7 @@ An optional **catch-all rule** with alias `*`, no tool condition and Groq/Gemini
 
 Checkbox selection order does not create a separate priority. Groq precedes Gemini because of global order. Other presets can change the starting profile. Rules do not inspect prompt text, schedules or keywords; supported conditions are alias, presence of tools and allowed profile set.
 
-## Usage and quotas
+## 📊 Usage and quotas
 
 The UI displays **locally observed usage through this router**, not universally verified provider balances. Other apps' usage is unknown. Provider portals are linked.
 
@@ -187,7 +188,7 @@ Before each actual API attempt, SQLite reserves estimated input plus maximum out
 
 **Usage** shows the latest 100 actual API attempts with profile, request ID, timestamp, tokens, duration and outcome. Fallbacks for one router request share its ID. A conversation with multiple tool steps may generate several router requests and IDs. CSV also contains estimated costs. Prompts, completions and executable tool arguments are not stored in the usage database.
 
-## Connect Home Assistant Assist
+## 🔗 Connect Home Assistant Assist
 
 ### Native LiteLLM integration
 
@@ -206,7 +207,31 @@ Choose server type **OpenAI**, enter the router URL **without a trailing `/v1`**
 
 The [MCP Assist guide](assist_ai_router/MCP_ASSIST.en.md) covers permissions, setup and troubleshooting for the inspected 0.17.2 connection. [MCP Assist](https://github.com/mike-nott/mcp-assist) is an alternative conversation agent. The separately linked native HA MCP client/server integrations are not generally required for this connection. The app installs nothing in the background and never edits HA `.storage` files.
 
-## Settings and operation
+## 🎙️ Speech-to-text with fallback
+
+Assist cannot pass a failed Speech-to-Phrase recognition on to Whisper by itself. The router can sit in front of both and appear in Home Assistant as **one** Wyoming speech-to-text service:
+
+1. Assist sends the voice command to the router (port 10300).
+2. The audio is streamed live to the **first engine**, by default the official *Speech-to-Phrase* app (`core_speech-to-phrase`, maintained by the Open Home Foundation in [OHF-Voice/speech-to-phrase](https://github.com/OHF-Voice/speech-to-phrase)). The router keeps a copy in memory.
+3. If the first engine returns no text, is unreachable or exceeds its time budget, the identical recording is replayed to the **second engine**, by default the official *Whisper* app (`core_whisper`).
+4. Assist receives exactly one transcript.
+
+**Setup:** install and start both engine apps, open **Speech input**, check the two addresses with **Check engines**, enable the gateway and save. Home Assistant announces “Assist AI Router” as a discovered Wyoming device (Settings → Devices & services); otherwise add **Wyoming Protocol** manually with the host and port shown on the page. Finally select it as speech-to-text in your voice assistant. Any other Wyoming speech-to-text service can be used instead of the defaults.
+
+| Option | Default | Effect |
+| --- | --- | --- |
+| `stt_enabled` | Off | Listens on port 10300 only while enabled; toggling applies immediately |
+| `stt_primary` | `tcp://core-speech-to-phrase:10300` | First engine |
+| `stt_fallback` | `tcp://core-whisper:10300` | Second engine |
+| `stt_primary_timeout` | 8 s | How long to wait for the first engine after the recording ended |
+| `stt_fallback_timeout` | 45 s | Time budget for the second engine |
+
+- Wyoming transcripts carry **no confidence value**. “No text” is therefore the signal that the first engine did not understand. A recognized but wrong phrase cannot be detected.
+- Home Assistant is offered the models and languages of both engines. If only the second engine knows the spoken language, the first one is skipped to save time. Last known capabilities are cached in `/data`, so Home Assistant still sees both engines when one is not running yet.
+- Audio exists only in memory while a voice command is processed (at most 8 MiB, roughly four minutes). Spoken text is never stored or logged; the page only shows outcome, language and duration since the app started.
+- Like other Wyoming apps, the service has no authentication. Port 10300 is not published unless you do so in the network settings.
+
+## ⚙️ Settings and operation
 
 | Setting | Default | Effect |
 | --- | --- | --- |
@@ -231,11 +256,11 @@ There are no periodic paid model probes. Status reflects previous tests/requests
 
 LiteLLM remains pinned to **1.106.6** and its image digest; startup verifies the SDK version. **Version check** queries GitHub only after a click, caches for one hour and installs nothing. A newer upstream release does not automatically replace the reviewed dependency.
 
-## Unexpected requests while idle
+## 💤 Unexpected requests while idle
 
 The app sends no automatic test prompts. UI refresh reads local data; model/account lookups use metadata endpoints, generate no completions and can still affect provider API request limits. **Test** sends a real prompt with up to eight output tokens after confirmation. Assist integrations, setup validation or automations may also trigger API requests. Starting with v1.0.4, usage history distinguishes **API** from **Manual test**; older entries remain **Unknown**. This does not identify the specific calling integration. **≈** indicates a conservative reservation, not confirmed usage. Failed attempts without reported usage retain their reservation. Pause all providers (in-flight requests may finish) or stop the app to stop forwarding requests completely. Temporarily disable connected integrations and automations to isolate the caller.
 
-## Troubleshooting
+## 🛠️ Troubleshooting
 
 | Symptom | Action |
 | --- | --- |
@@ -249,15 +274,15 @@ The app sends no automatic test prompts. UI refresh reads local data; model/acco
 | MCP Assist 404/401 | Check OpenAI type, URL without /v1 and router key instead of provider key. |
 | All providers fail | Check account limits, network and permissions; add independent providers/local fallback. |
 
-## Development and further documentation
+## 📚 Development and further documentation
 
 [Detailed configuration](assist_ai_router/DOCS.en.md) · [MCP Assist](assist_ai_router/MCP_ASSIST.en.md) · [Development and acceptance](CONTRIBUTING.md) · [Changelog](assist_ai_router/CHANGELOG.md) · [More Home Assistant Apps](https://github.com/seb5594/Home-Assistant-Apps)
 
-Automated tests cover routing, secrets, HTTP boundaries, metadata discovery and SDK integration. Real Home Assistant, provider-account, device-action, browser and backup-restore acceptance remains separate.
+Automated tests cover routing, secrets, HTTP boundaries, metadata discovery, the speech gateway and SDK integration. Real Home Assistant, provider-account, device-action, browser and backup-restore acceptance remains separate.
 
-The footer links this project and other apps, includes **Support my work ☕**, and displays “Application developed by seb5594 (Sebastian Schmidt) - Made with ♥ in Germany” with a red heart.
+The footer links this project and other apps, includes **Support my work ☕🍺**, and displays “Application developed by seb5594 (Sebastian Schmidt) - Made with ♥ in Germany 🇩🇪” with a red heart.
 
-[Support my work ☕](https://paypal.me/seb5594). Published under the [MIT License](LICENSE).
+[Support my work ☕🍺](https://paypal.me/seb5594). Published under the [MIT License](LICENSE).
 
 Copyright (c) 2026 seb5594 (Sebastian Schmidt). LiteLLM and other third-party components retain their respective licenses.
 

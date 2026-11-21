@@ -1,7 +1,7 @@
 """Starter profiles. Availability and free allowances belong to each account, never inferred."""
 from .offers import offer
 
-VERSION = "1.0.5"
+VERSION = "2026.11.21"
 LITELLM_VERSION = "1.106.6"
 
 # Prefixes are LiteLLM SDK providers; model suggestions are editable examples, not free-tier claims.
@@ -38,7 +38,9 @@ def catalog():
 DEFAULTS = dict(language="de", routing="priority", providers=[], rules=[],
                 max_output_tokens=512, request_timeout=45, attempt_timeout=12,
                 max_attempts=4, cooldown_seconds=60, reserve_percent=5,
-                allow_paid=False, history_days=30, gateway_url="")
+                allow_paid=False, history_days=30, gateway_url="",
+                stt_enabled=False, stt_primary="tcp://core-speech-to-phrase:10300",
+                stt_fallback="tcp://core-whisper:10300", stt_primary_timeout=8, stt_fallback_timeout=45)
 
 PROVIDER_DEFAULTS = dict(name="", preset="openai_compatible", model="", api_key="",
                          api_base="", api_version="", enabled=True, free_only=False,

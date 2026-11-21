@@ -197,3 +197,22 @@ test('token-consuming tests send no request unless explicitly confirmed', async 
   assert.equal(calls[0].route,'test'); assert.equal(calls[0].body.confirmed,true);
   assert.equal(calls[0].body.provider_id,'a'); assert.equal(calls[1].route,'status');
 });
+
+test('speech page shows engine checks, counters and recent routes without exposing transcripts', () => {
+  const page = editorUi({});
+  vm.runInContext(`
+    state.lang = 'en'; state.words = {en: {}};
+    state.cfg = {stt_enabled: true, stt_primary: 'tcp://a:1', stt_fallback: 'tcp://b:1', stt_primary_timeout: 8, stt_fallback_timeout: 45};
+    state.status = {stt: {listening: true, error: '', host: 'router-host', port: 10300, discovery: 'announced',
+      counters: {requests: 3, primary: 2, fallback: 1, none: 0}, recent: [{ts: 1, route: 'fallback', reason: 'empty', ms: 700, language: 'de'}]}};
+    state.speechCheck = {engines: [{role: 'primary', ok: true, ms: 5, languages: ['de'], uri: 'tcp://a:1', error: ''},
+      {role: 'fallback', ok: false, ms: 3, languages: [], uri: 'tcp://b:1', error: 'stt_unreachable'}]};
+    globalThis.root = document.createElement('div'); renderSpeech(root);
+  `, page.context);
+  const texts = []; const walk = e => { if (e.textContent) texts.push(e.textContent); (e.children || []).forEach(walk); };
+  walk(page.context.root);
+  for (const expected of ['✅ route_primary · speech_check_ok · 1 speech_languages · 5 ms', '❌ route_fallback · stt_unreachable',
+                          'route_fallback (reason_empty)', 'speech_discovery_announced', 'speech_listening']) {
+    assert(texts.includes(expected), expected);
+  }
+});

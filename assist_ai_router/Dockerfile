@@ -8,7 +8,7 @@ ARG LITELLM_VERSION=1.110.2
 ARG MCP_VERSION=2.3.0
 RUN python -m pip install --no-cache-dir litellm==${LITELLM_VERSION} mcp==${MCP_VERSION}
 
-ARG BUILD_VERSION=1.0.5
+ARG BUILD_VERSION=2026.11.21
 LABEL io.hass.version="${BUILD_VERSION}" \
     io.hass.type="addon" \
     org.opencontainers.image.title="Home Assistant App: Assist AI Router" \
@@ -23,6 +23,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /opt/router
 COPY app /opt/router/app
 COPY --chmod=755 run.sh entrypoint.sh /
-EXPOSE 8000 8099
+EXPOSE 8000 8099 10300
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 CMD ["/run.sh"]

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026.11.21
+
+* 🎙️ Add a Wyoming speech-to-text gateway with automatic fallback: the first engine (default Speech-to-Phrase) is tried first and the identical recording is replayed to the second engine (default Whisper) when it returns no text, is unreachable or exceeds its time budget. Disabled by default; toggling applies without a restart.
+* 🔗 Announce the gateway to Home Assistant through Supervisor discovery, keep the last known engine capabilities for start-up races, and skip the first engine for languages only the second one offers.
+* 🧭 Add a **Speech input** page with engine check, status counters and Home Assistant connection values. Spoken text is never stored or logged.
+* 🔖 Switch release versioning to `YYYY.MM.DD`; the first build of a day has no suffix, further builds add `.1`, `.2` and so on.
+* ✨ Add emojis to documentation and headings, ☕🍺 to the support link and 🇩🇪 to the footer credit.
+
 ## 1.0.5
 
 * Update the LiteLLM runtime image and test dependency together to 1.106.6.
