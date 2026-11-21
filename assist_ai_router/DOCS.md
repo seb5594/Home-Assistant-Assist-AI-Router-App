@@ -1,6 +1,6 @@
 # Assist AI Router — Deutsch
 
-Version **2026.11.21** · LiteLLM **1.106.6** · Home Assistant **2026.8+**
+Version **2026.11.21** · LiteLLM **1.110.2** · Home Assistant **2026.8+**
 
 ## 🚀 In fünf Schritten zu Assist
 
@@ -87,7 +87,7 @@ Die Softwaretests ersetzen keinen Praxistest auf Home Assistant OS: amd64/aarch6
 * [App-Optionen und Secrets](https://contributors.home-assistant.io/apps/guides/options/)
 * [Supervisor-App-API](https://contributors.home-assistant.io/apps/supervisor-api/apps/)
 * [LiteLLM-Routing](https://docs.litellm.ai/docs/routing)
-* [Gepinntes LiteLLM-Release](https://github.com/BerriAI/litellm/releases/tag/v1.106.6)
+* [Gepinntes LiteLLM-Release](https://github.com/BerriAI/litellm/releases/tag/v1.110.2)
 
 ## 📋 API-Tarife und Regelbeispiele
 

@@ -7,6 +7,7 @@
 * 🧭 Add a **Speech input** page with engine check, status counters and Home Assistant connection values. Spoken text is never stored or logged.
 * 🔖 Switch release versioning to `YYYY.MM.DD`; the first build of a day has no suffix, further builds add `.1`, `.2` and so on.
 * ✨ Add emojis to documentation and headings, ☕🍺 to the support link and 🇩🇪 to the footer credit.
+* 📌 Align the reviewed LiteLLM pin with the runtime image and test dependency at 1.110.2.
 
 ## 1.0.5
 
