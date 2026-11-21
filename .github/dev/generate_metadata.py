@@ -35,9 +35,10 @@ def main():
                url="https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App",
                arch=["amd64", "aarch64"], homeassistant="2026.8.0", stage="stable",
                startup="application", boot="auto", init=True, ingress=True, ingress_port=8099,
-               panel_icon="mdi:routes", panel_title="Assist AI Router", ports={"8000/tcp": None},
-               ports_description={"8000/tcp": "Optional authenticated OpenAI-compatible API (internal access works without publishing)"},
-               options=DEFAULTS, schema=options_schema)
+               panel_icon="mdi:routes", panel_title="Assist AI Router", ports={"8000/tcp": None, "10300/tcp": None},
+               ports_description={"8000/tcp": "Optional authenticated OpenAI-compatible API (internal access works without publishing)",
+                                  "10300/tcp": "Optional Wyoming speech-to-text gateway (internal access works without publishing)"},
+               discovery=["wyoming"], options=DEFAULTS, schema=options_schema)
     (app / "config.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False, allow_unicode=True), encoding="utf-8")
     words = json.loads((app / "app/static/i18n.json").read_text(encoding="utf-8"))
     extra = {"de": {"language": "Sprache", "providers": "Anbieterprofile", "rules": "Eigene Routingregeln", "id": "Eindeutige Profil-ID", "provider_ids": "Erlaubte Profil-IDs, durch Komma getrennt"},
@@ -53,7 +54,8 @@ def main():
                     item["fields"] = fields(nested)
                 result[k] = item
             return result
-        translations = dict(configuration=fields(options_schema), network={"8000/tcp": dict(name=labels["base_url"])})
+        translations = dict(configuration=fields(options_schema), network={"8000/tcp": dict(name=labels["base_url"]),
+                                                        "10300/tcp": dict(name=labels["speech_network_label"])})
         (app / "translations").mkdir(exist_ok=True)
         (app / "translations" / f"{lang}.yaml").write_text(yaml.safe_dump(translations, sort_keys=False, allow_unicode=True), encoding="utf-8")
 

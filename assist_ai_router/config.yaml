@@ -1,5 +1,5 @@
 name: Assist AI Router
-version: 1.0.5
+version: 2026.11.21
 slug: assist_ai_router
 description: Multi-provider AI gateway for Home Assistant Assist, powered by LiteLLM.
 url: https://github.com/seb5594/Home-Assistant-Assist-AI-Router-App
@@ -17,9 +17,14 @@ panel_icon: mdi:routes
 panel_title: Assist AI Router
 ports:
   8000/tcp: null
+  10300/tcp: null
 ports_description:
   8000/tcp: Optional authenticated OpenAI-compatible API (internal access works without
     publishing)
+  10300/tcp: Optional Wyoming speech-to-text gateway (internal access works without
+    publishing)
+discovery:
+- wyoming
 options:
   language: de
   routing: priority
@@ -34,6 +39,11 @@ options:
   allow_paid: false
   history_days: 30
   gateway_url: ''
+  stt_enabled: false
+  stt_primary: tcp://core-speech-to-phrase:10300
+  stt_fallback: tcp://core-whisper:10300
+  stt_primary_timeout: 8
+  stt_fallback_timeout: 45
 schema:
   language: list(de|en)
   routing: list(priority|quota|round_robin|local_first)
@@ -74,3 +84,8 @@ schema:
   allow_paid: bool
   history_days: int(0,)
   gateway_url: str
+  stt_enabled: bool
+  stt_primary: str
+  stt_fallback: str
+  stt_primary_timeout: int(0,)
+  stt_fallback_timeout: int(0,)

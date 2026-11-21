@@ -10,6 +10,10 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from .catalog import DEFAULTS, PROVIDER_DEFAULTS, catalog
+from .wyoming import parse_uri
+
+STT_PORT = 10300
+LOOPBACK = ("localhost", "127.0.0.1", "::1")
 
 
 class ConfigError(Exception):
@@ -27,6 +31,30 @@ def validate_url(value):
         raise ConfigError("invalid_url")
 
 
+def validate_stt(cfg):
+    """Speech engines are Wyoming services reached by tcp://host:port; the gateway must never loop to itself."""
+    if type(cfg["stt_enabled"]) is not bool:
+        raise ConfigError("invalid_settings")
+    for key, lo, hi in (("stt_primary_timeout", 1, 60), ("stt_fallback_timeout", 1, 300)):
+        if type(cfg[key]) is not int or not lo <= cfg[key] <= hi:
+            raise ConfigError("invalid_" + key)
+    endpoints = []
+    for key in ("stt_primary", "stt_fallback"):
+        if not isinstance(cfg[key], str) or len(cfg[key]) > 512:
+            raise ConfigError("invalid_stt_uri")
+        if not cfg[key]:
+            continue
+        try:
+            host, port = parse_uri(cfg[key])
+        except ValueError:
+            raise ConfigError("invalid_stt_uri") from None
+        if host in ("supervisor", "169.254.169.254", "metadata.google.internal") or (host in LOOPBACK and port == STT_PORT):
+            raise ConfigError("invalid_stt_uri")
+        endpoints.append((host, port))
+    if cfg["stt_enabled"] and (len(endpoints) != 2 or endpoints[0] == endpoints[1]):
+        raise ConfigError("invalid_stt_setup")
+
+
 def normalize(raw):
     if not isinstance(raw, dict) or set(raw) - set(DEFAULTS):
         raise ConfigError("invalid_settings")
@@ -41,6 +69,7 @@ def normalize(raw):
     if type(cfg["allow_paid"]) is not bool or not isinstance(cfg["gateway_url"], str):
         raise ConfigError("invalid_settings")
     validate_url(cfg["gateway_url"])
+    validate_stt(cfg)
     if not isinstance(cfg["providers"], list) or len(cfg["providers"]) > 100:
         raise ConfigError("invalid_providers")
     ids = set()
@@ -90,8 +119,8 @@ class Supervisor:
     def __init__(self, token):
         self.token = token
 
-    def request(self, path, data=None):
-        req = urllib.request.Request("http://supervisor" + path,
+    def request(self, path, data=None, method=None):
+        req = urllib.request.Request("http://supervisor" + path, method=method,
                                      data=None if data is None else json.dumps(data).encode(),
                                      headers={"Authorization": "Bearer " + self.token, "Content-Type": "application/json"})
         try:
@@ -110,6 +139,13 @@ class Supervisor:
 
     def save(self, raw):
         self.request("/addons/self/options", {"options": raw})
+
+    def announce(self, uri):
+        """Let Home Assistant's Wyoming integration discover the speech gateway."""
+        return self.request("/discovery", {"service": "wyoming", "config": {"uri": uri}})["uuid"]
+
+    def withdraw(self, uuid):
+        self.request("/discovery/" + uuid, method="DELETE")
 
 
 class Settings:

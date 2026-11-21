@@ -25,6 +25,10 @@ class Packaging(unittest.TestCase):
         self.assertIn("ghcr.io/seb5594/home-assistant-base-python:", docker)
         self.assertEqual(cfg["ports"]["8000/tcp"], None)
         self.assertNotIn("8099/tcp", cfg["ports"])
+        self.assertEqual(cfg["ports"]["10300/tcp"], None)
+        self.assertEqual(cfg["discovery"], ["wyoming"])
+        self.assertIn("EXPOSE 8000 8099 10300", docker)
+        self.assertRegex(VERSION, r"^\d{4}\.\d{2}\.\d{2}(\.[1-9]\d*)?$")  # YYYY.MM.DD, later builds .1, .2, ...
         self.assertFalse(cfg.get("hassio_api", False))
         self.assertFalse(cfg.get("homeassistant_api", False))
 

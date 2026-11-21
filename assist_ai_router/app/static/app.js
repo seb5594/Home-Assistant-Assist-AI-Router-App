@@ -1,13 +1,13 @@
 'use strict';
 const $ = (q, root = document) => root.querySelector(q);
-const state = {cfg: null, revision: '', status: null, catalog: [], models: {}, words: {}, lang: 'de', page: 'overview', setupIntegration: 'litellm', saving: false, draggedProviderId: null};
-const pages = {overview: '🏠', providers: '🧩', routing: '🔀', activity: '📊', setup: '🔗', settings: '⚙️'};
+const state = {speechCheck: null, cfg: null, revision: '', status: null, catalog: [], models: {}, words: {}, lang: 'de', page: 'overview', setupIntegration: 'litellm', saving: false, draggedProviderId: null};
+const pages = {overview: '🏠', providers: '🧩', routing: '🔀', speech: '🎙️', activity: '📊', setup: '🔗', settings: '⚙️'};
 const t = (key) => state.words[state.lang]?.[key] ?? state.words.en?.[key] ?? key;
 const fmt = (n) => new Intl.NumberFormat(state.lang).format(n || 0);
 function el(tag, text, cls) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; }
 function button(text, action, cls) { const e = el('button', text, cls); e.type = 'button'; e.addEventListener('click', () => guard(action)); return e; }
 function withIcon(element, symbol) { const icon = el('span', symbol, 'ui-icon'); icon.ariaHidden = 'true'; element.prepend(icon, document.createTextNode(' ')); return element; }
-const actionIcons = {add_provider: '➕', edit: '✏️', test: '🧪', pause_provider: '⏸️', resume_provider: '▶️', remove: '🗑️', start_setup: '🔗', add_rule: '➕', check_versions: '🔎', reveal_connection: '🔑'};
+const actionIcons = {add_provider: '➕', edit: '✏️', test: '🧪', pause_provider: '⏸️', resume_provider: '▶️', remove: '🗑️', start_setup: '🔗', add_rule: '➕', check_versions: '🔎', reveal_connection: '🔑', check_engines: '🩺', open_wyoming: '🔌'};
 function actionButton(key, action, cls) { return withIcon(button(t(key), action, cls), actionIcons[key] || '⚙️'); }
 function providerIcon(preset) { return ({gemini: '✨', groq: '⚡', cerebras: '🧠', openrouter: '🔀', mistral: '🌬️', huggingface: '🤗', github: '🐙', cloudflare: '☁️', openai: '🌀', anthropic: '💬', azure: '☁️', ollama_chat: '🦙', openai_compatible: '🖥️'})[preset] || '🧠'; }
 function link(text, url) { const e = el('a', text); e.href = url; e.target = '_blank'; e.rel = 'noopener noreferrer'; return e; }
@@ -135,7 +135,7 @@ function render() {
   $('#version').textContent = `${state.status.version} · LiteLLM ${state.status.litellm}`;
   $('#nav').replaceChildren(...Object.entries(pages).map(([key, icon]) => { const a = el('a', undefined, key === state.page ? 'active' : ''); a.href = `#${key}`; const marker = el('span', icon); marker.ariaHidden = 'true'; a.append(marker, document.createTextNode(t(key))); return a; }));
   const content = $('#content'); content.replaceChildren();
-  ({overview: renderOverview, providers: renderProviders, routing: renderRouting, activity: renderActivity, setup: renderSetup, settings: renderSettings})[state.page](content);
+  ({overview: renderOverview, providers: renderProviders, routing: renderRouting, speech: renderSpeech, activity: renderActivity, setup: renderSetup, settings: renderSettings})[state.page](content);
 }
 function providerCard(p, index, compact = false) {
   const status = state.status.providers.find(x => x.id === p.id);
@@ -381,6 +381,59 @@ function renderRouting(root) {
   const submit = el('button', t('add_rule'), 'primary'); submit.type = 'submit'; form.append(submit);
   form.addEventListener('submit', e => { e.preventDefault(); guard(async () => { const targets = choices.filter(x => x.checked).map(x => x.name); if (!targets.length) throw new Error('invalid_rules'); const c = cloneCfg(); c.rules.push({name: name.input.value.trim(), alias: alias.input.value.trim(), require_tools: tools.input.checked, provider_ids: targets.join(',')}); await save(c); }); }); panel.append(form); root.append(panel);
 }
+function speechFlow() {
+  const flow = el('div', undefined, 'flow'); flow.setAttribute('role', 'img'); flow.ariaLabel = t('speech_flow_label');
+  const steps = [['🎤', 'speech_flow_voice'], ['⚡', 'speech_flow_primary'], ['🧠', 'speech_flow_fallback'], ['📝', 'speech_flow_text']];
+  const arrows = ['→', `${t('speech_flow_if_empty')} →`, '→'];
+  steps.forEach(([icon, label], index) => {
+    if (index) flow.append(el('span', arrows[index - 1], 'flow-arrow'));
+    const step = el('div', undefined, 'flow-step'); step.append(el('span', icon, 'flow-icon'), el('small', t(label))); flow.append(step);
+  });
+  return flow;
+}
+function renderSpeech(root) {
+  const stt = state.status.stt;
+  root.append(el('p', t('speech_intro'), 'muted'), speechFlow());
+  const form = el('form', undefined, 'panel'); form.append(el('h2', t('speech_settings')));
+  const grid = el('div', undefined, 'form-grid');
+  grid.append(field('stt_enabled', state.cfg.stt_enabled, 'checkbox').wrap);
+  const engines = [['stt_primary', 'text'], ['stt_fallback', 'text'], ['stt_primary_timeout', 'number'], ['stt_fallback_timeout', 'number']];
+  for (const [key, type] of engines) { const f = field(key, state.cfg[key], type); if (type === 'number') { f.input.min = '1'; f.input.step = '1'; } else { f.input.spellcheck = false; f.input.placeholder = 'tcp://host:10300'; f.wrap.className += ' full'; } grid.append(f.wrap); }
+  form.append(grid, note(t('speech_engine_hint')));
+  const actions = el('div', undefined, 'actions'); const submit = el('button', t('save'), 'primary'); submit.type = 'submit';
+  actions.append(submit, actionButton('check_engines', async () => { state.speechCheck = await api('stt-test', 'POST', {}); render(); }));
+  form.append(actions);
+  form.addEventListener('submit', e => { e.preventDefault(); guard(async () => { const c = cloneCfg(); for (const input of form.querySelectorAll('input')) c[input.name] = input.type === 'checkbox' ? input.checked : input.type === 'number' ? Number(input.value) : input.value.trim(); await save(c); }); });
+  if (state.speechCheck) {
+    const results = el('ul', undefined, 'engine-checks');
+    for (const row of state.speechCheck.engines) {
+      const text = row.ok ? `✅ ${t('route_' + row.role)} · ${t('speech_check_ok')} · ${fmt(row.languages.length)} ${t('speech_languages')} · ${fmt(row.ms)} ms` : `❌ ${t('route_' + row.role)} · ${t(row.error)}`;
+      const item = el('li', text); item.title = row.uri; results.append(item);
+    }
+    form.append(results);
+  }
+  root.append(form);
+  const status = el('section', undefined, 'panel'); const head = el('div', undefined, 'section-head');
+  head.append(el('h2', t('speech_status')), el('span', t(stt.listening ? 'speech_listening' : 'speech_off'), `pill ${stt.listening ? 'ready' : ''}`)); status.append(head);
+  if (stt.error) status.append(note(t(stt.error)));
+  const counters = stt.counters; const stats = el('div', undefined, 'stats');
+  for (const [value, label] of [[counters.requests, 'speech_requests'], [counters.primary, 'speech_answered'], [counters.fallback, 'speech_rescued'], [counters.none, 'speech_missed']]) {
+    const box = el('div', undefined, 'stat'); box.append(el('span', t(label), 'muted'), el('strong', fmt(value)), el('span', t('speech_since_start'), 'muted')); stats.append(box);
+  }
+  status.append(stats);
+  if (stt.recent.length) {
+    const wrap = el('div', undefined, 'table-wrap'); const table = el('table'); const head = el('thead'); const row = el('tr');
+    for (const key of ['time', 'status', 'language_column', 'latency']) row.append(el('th', t(key))); head.append(row);
+    const body = el('tbody');
+    for (const r of stt.recent) { const tr = el('tr'); const route = t('route_' + r.route) + (r.reason ? ` (${t('reason_' + r.reason)})` : ''); for (const value of [new Date(r.ts * 1000).toLocaleTimeString(state.lang), route, r.language || '–', `${fmt(r.ms)} ms`]) tr.append(el('td', value)); body.append(tr); }
+    table.append(head, body); wrap.append(table); status.append(el('h3', t('speech_recent')), wrap);
+  } else status.append(el('p', t('speech_no_commands'), 'muted'));
+  status.append(note(t('speech_privacy_note'))); root.append(status);
+  const connect = el('section', undefined, 'panel'); connect.append(el('h2', t('speech_connect')), el('p', t('speech_connect_text'), 'muted'), connectionRow(t('speech_host'), stt.host), connectionRow(t('speech_port'), String(stt.port)));
+  connect.append(note(t('speech_discovery_' + stt.discovery)));
+  const links = el('div', undefined, 'actions'); links.append(link(t('open_wyoming') + ' ↗', 'https://my.home-assistant.io/redirect/config_flow_start/?domain=wyoming'), link(t('open_assist') + ' ↗', 'https://my.home-assistant.io/redirect/voice_assistants/'));
+  connect.append(links); root.append(connect, note(t('speech_boundary')));
+}
 function renderActivity(root) {
   root.append(el('p', t('activity_intro'), 'muted'), note(t('estimate_note')), note(t('idle_usage_note')));
   const panel = el('div', undefined, 'panel'); const toolbar = el('div', undefined, 'toolbar'); const filter = el('input'); filter.type = 'search'; filter.placeholder = t('filter_requests'); filter.ariaLabel = t('filter_requests');
@@ -438,4 +491,4 @@ $('#language').onchange = () => guard(async () => { const lang = $('#language').
 window.addEventListener('hashchange', render);
 window.addEventListener('unhandledrejection', () => notice(t('network_error'), true));
 (async () => { state.words = await (await fetch('i18n.json')).json(); $('#content').append(el('p', t('loading'), 'loading')); await guard(load); })();
-setInterval(() => { if (!state.cfg || state.saving || state.draggedProviderId || document.hidden || $('#editor').open || !['overview', 'providers', 'activity'].includes(state.page)) return; guard(async () => { const status = await api('status'); if (state.saving || state.draggedProviderId || $('#editor').open) return; state.status = status; render(); }); }, 15000);
+setInterval(() => { if (!state.cfg || state.saving || state.draggedProviderId || document.hidden || $('#editor').open || !['overview', 'providers', 'activity', 'speech'].includes(state.page)) return; guard(async () => { const status = await api('status'); if (state.saving || state.draggedProviderId || $('#editor').open) return; state.status = status; render(); }); }, 15000);

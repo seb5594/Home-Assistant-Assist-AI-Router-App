@@ -21,6 +21,7 @@ from .router import GatewayError, Router, sdk
 from .settings import ConfigError, Settings, Supervisor
 from .discovery import discover
 from .accounts import Accounts
+from .stt import PORT as STT_PORT, SttGateway
 
 STATIC = Path(__file__).parent / "static"
 
@@ -43,7 +44,7 @@ def buffered_sse(result):
 
 
 class State:
-    def __init__(self, folder, supervisor=None, call=None, dev=False):
+    def __init__(self, folder, supervisor=None, call=None, dev=False, stt_port=STT_PORT):
         self.settings = Settings(folder, supervisor)
         self.ledger = Ledger(Path(folder) / "usage.sqlite3")
         self.router = Router(self.settings, self.ledger, **({"call": call} if call else {}))
@@ -55,6 +56,8 @@ class State:
         if len(self.token) < 32:
             raise ConfigError("invalid_gateway_token")
         self.dev = dev
+        self.stt = SttGateway(self.settings, folder, VERSION, port=stt_port, supervisor=supervisor,
+                              host="127.0.0.1" if dev else "0.0.0.0")
         self.accounts = Accounts()
         self.version_lock = threading.Lock()
         self.version_result = None
@@ -72,7 +75,8 @@ class State:
             providers.append(dict(id=p["id"], status=status, health=health, usage=usage, blocked=blocked))
         return dict(version=VERSION, litellm=importlib.metadata.version("litellm"), pinned=LITELLM_VERSION,
                     providers=providers, recent=self.ledger.recent(), models=self.router.models(),
-                    synchronized=bool(self.settings.supervisor), quota_source="local_estimates_utc")
+                    synchronized=bool(self.settings.supervisor), quota_source="local_estimates_utc",
+                    stt=self.stt.status())
 
     def connection(self, integration="litellm"):
         if integration not in ("litellm", "mcp_assist"):
@@ -237,6 +241,7 @@ class Handler(BaseHTTPRequestHandler):
         if method == "GET":
             if path == "/api/settings":
                 state.settings.reload()
+                state.stt.reconfigure()  # Picks up changes made in the Home Assistant Configuration tab.
                 return self.reply(200, state.settings.view())
             if path == "/api/status":
                 return self.reply(200, state.status())
@@ -253,7 +258,9 @@ class Handler(BaseHTTPRequestHandler):
             body = self.body()
             if not isinstance(body, dict):
                 raise GatewayError("invalid_request", 400)
-            return self.reply(200, state.settings.save(body.get("options"), body.get("revision")))
+            saved = state.settings.save(body.get("options"), body.get("revision"))
+            state.stt.reconfigure()
+            return self.reply(200, saved)
         elif method == "POST":
             body = self.body()
             if not isinstance(body, dict):
@@ -268,6 +275,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, discover(state.settings.discovery_profile(body)))
             if path == "/api/versions":
                 return self.reply(200, state.versions())
+            if path == "/api/stt-test":
+                return self.reply(200, state.stt.check())
             if path == "/api/test":
                 if body.get("confirmed") is not True:
                     raise GatewayError("test_confirmation_required", 400)
@@ -285,24 +294,28 @@ def main():
     parser.add_argument("--dev", action="store_true")
     parser.add_argument("--admin-port", type=int, default=8099)
     parser.add_argument("--api-port", type=int, default=8000)
+    parser.add_argument("--stt-port", type=int, default=STT_PORT)
     args = parser.parse_args()
     if importlib.metadata.version("litellm") != LITELLM_VERSION:
         raise SystemExit("LiteLLM version differs from reviewed pin")
     supervisor_token = os.environ.get("SUPERVISOR_TOKEN")
     if not args.dev and not supervisor_token:
         raise SystemExit("Supervisor token required; local development requires --dev")
-    state = State(args.data, Supervisor(supervisor_token) if supervisor_token and not args.dev else None, dev=args.dev)
+    state = State(args.data, Supervisor(supervisor_token) if supervisor_token and not args.dev else None,
+                  dev=args.dev, stt_port=args.stt_port)
     sdk()
     bind = "127.0.0.1" if args.dev else "0.0.0.0"
     admin, api = Server((bind, args.admin_port), state, True), Server((bind, args.api_port), state, False)
     threads = [threading.Thread(target=s.serve_forever, daemon=True) for s in (admin, api)]
     for thread in threads:
         thread.start()
+    state.stt.start()
     stopped = threading.Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stopped.set())
     print(f"Assist AI Router {VERSION} · LiteLLM {LITELLM_VERSION}", flush=True)
     stopped.wait()
+    state.stt.stop()
     for server in (admin, api):
         server.shutdown()
         server.server_close()

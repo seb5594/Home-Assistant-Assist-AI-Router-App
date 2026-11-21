@@ -11,3 +11,5 @@ python -m unittest test_http -v
 echo 'PASS: HTTP authentication, Assist tools, SSE and actual LiteLLM SDK'
 python -m unittest test_discovery -v
 echo 'PASS: direct provider model listing, draft credentials, secrets and redirect safety'
+python -m unittest test_stt -v
+echo 'PASS: speech gateway framing, fallback routing and live reconfiguration'

@@ -79,6 +79,18 @@ configuration:
     name: History retention (days)
   gateway_url:
     name: Alternative router URL for setup
+  stt_enabled:
+    name: Enable speech-to-text with fallback
+  stt_primary:
+    name: First engine (Wyoming address)
+  stt_fallback:
+    name: Second engine, used as fallback (Wyoming address)
+  stt_primary_timeout:
+    name: First engine time budget (seconds)
+  stt_fallback_timeout:
+    name: Second engine time budget (seconds)
 network:
   8000/tcp:
     name: Router base URL
+  10300/tcp:
+    name: Wyoming speech-to-text gateway
