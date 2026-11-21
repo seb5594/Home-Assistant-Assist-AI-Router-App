@@ -1,4 +1,4 @@
-# Weiterentwicklung / Roadmap
+# 🗺️ Weiterentwicklung / Roadmap
 
 Die erste Version bleibt experimentell, bis die realen HA-Abnahmeschritte in CONTRIBUTING.md dokumentiert sind. Diese Liste beschreibt geplante Erweiterungen, keine bereits verfügbaren Funktionen.
 

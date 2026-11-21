@@ -1,8 +1,8 @@
 # Assist AI Router — English
 
-Version **1.0.5** · LiteLLM **1.106.6** · Home Assistant **2026.8+**
+Version **2026.11.21** · LiteLLM **1.106.6** · Home Assistant **2026.8+**
 
-## Quick start
+## 🚀 Quick start
 
 1. Install/start the app and open its ingress web interface. LiteLLM is included.
 2. Select a provider template, enter its key and model, save, and test the connection. Tests send a small real request.
@@ -12,7 +12,7 @@ Version **1.0.5** · LiteLLM **1.106.6** · Home Assistant **2026.8+**
 
 Home Assistant reaches the internal app hostname on port 8000; setup obtains that hostname from Supervisor. The API's `/v1/models` returns `assist-auto`, custom rule aliases and `provider:<profile-id>`. Explicit provider aliases target exactly one profile without fallback. Use `assist-auto` for normal Assist use.
 
-## Configuration and credentials
+## 🔐 Configuration and credentials
 
 Use **Pause/Resume** directly on provider cards in Overview or Providers. Paused profiles remain excluded until manually resumed, including after app restarts. Credentials, priority, rules and usage are preserved. New requests skip them; already running calls may still finish. Resuming does not reset limits or cooldowns.
 
@@ -34,7 +34,7 @@ There are 21 templates: Google AI Studio, Groq, Cerebras, OpenRouter, Mistral, H
 
 Templates do not promise free access. Confirm free usage only for a model/account you have checked. Paid-marked profiles are blocked by default, but the app cannot verify your account tariff or prevent provider billing. Local models need a reachable endpoint. Text connection tests do not prove a model's tool-calling quality; enable tool support only for suitable models.
 
-## Policies and rules
+## 🔀 Policies and rules
 
 | Policy | Selection |
 | --- | --- |
@@ -47,7 +47,7 @@ The first matching custom rule restricts the provider set by requested model ali
 
 429, authentication failures, missing models, network errors and server errors can trigger fallback. Cooldowns honor `Retry-After`; shared quota groups share 429 cooldowns. Invalid requests are not blindly replayed. Context-window errors may try another model; messages and Assist tools are never truncated/dropped. Per-request and per-attempt timeouts are forwarded to LiteLLM, and maximum attempts limit the search; individual network phases can affect total elapsed time.
 
-## Usage and limits
+## 📊 Usage and limits
 
 Configure RPM, TPM, daily requests, daily/monthly tokens, context windows and monthly budgets. **0 means unknown / no local enforcement**, not unlimited free allowance. A safety reserve reduces usable quota. SQLite reserves estimated input plus maximum output before each upstream call, under a lock, so concurrent requests cannot promise the same local quota twice.
 
@@ -57,7 +57,11 @@ Matching provider prefix, base URL and key share counters automatically. Give pr
 
 Dashboard values are local observations, not verified provider balances. Provider portals are linked. The usage page shows the latest 100 attempts, including input/output/total tokens, timing, request IDs and fallbacks. CSV adds estimated USD costs using manually entered prices. Retention is configurable; current-month rows remain until the next month to preserve quota accounting. Prompts, completions and executable tool arguments are never stored.
 
-## MCP, operation and updates
+## 🎙️ Speech-to-text fallback
+
+Enable it on the **Speech input** page. The router then listens on port 10300 as a Wyoming speech-to-text service, streams each voice command to the first engine (default `tcp://core-speech-to-phrase:10300`) and replays the same recording to the second engine (default `tcp://core-whisper:10300`) when the first returns no text, is unreachable or too slow. Home Assistant discovers it as the Wyoming device “Assist AI Router”; otherwise add it manually with the host and port shown on the page. Wyoming provides no confidence score, so only “no text” triggers the fallback. Spoken text is never stored. Details and options are in the [README](../README.md).
+
+## 🔌 MCP, operation and updates
 
 The HACS **MCP Assist by mike-nott** integration has its own selectable path under **Connect Assist**. It opens the HACS repository and integration form and supplies the correct server root URL **without `/v1`**, the router key, `assist-auto` and a timeout suggestion. Select the **OpenAI** compatible server type in MCP Assist and replace its default cloud URL with the router URL. The [MCP Assist guide](MCP_ASSIST.en.md) covers installation, entity permissions, free-quota settings and troubleshooting. MCP Assist can replace the native LiteLLM conversation agent.
 
@@ -67,7 +71,7 @@ Ingress administration listens on 8099 and accepts only Supervisor's ingress pee
 
 SQLite, options and the generated router key live in `/data`; include them in app backups. Backups may contain credentials. The image uses the exact official LiteLLM release tag with upstream's frozen dependencies; startup verifies the SDK version. The full upstream image is larger than an SDK-only install. Telemetry is disabled. No periodic paid health checks, Redis or PostgreSQL are required.
 
-The stable version check contacts GitHub only after a click, caches for one hour, and installs nothing. Updates ship in reviewed app releases. Starting with v1.0.0, semantic versions (`MAJOR.MINOR.PATCH`) replace calendar versions.
+The stable version check contacts GitHub only after a click, caches for one hour, and installs nothing. Updates ship in reviewed app releases. Versions follow the calendar scheme `YYYY.MM.DD`; a further build on the same day gets the suffix `.1`, `.2` and so on.
 
 If all allowed providers are exhausted/unavailable and no local fallback is available, the API returns HTTP 503 with `no_provider_available`. Unlimited cloud answers cannot be guaranteed.
 
@@ -75,6 +79,6 @@ Before a stable release, test installation on real HA OS amd64/aarch64, protecti
 
 References: [native LiteLLM integration](https://www.home-assistant.io/integrations/litellm/), [app options/secrets](https://contributors.home-assistant.io/apps/guides/options/), [Supervisor app API](https://contributors.home-assistant.io/apps/supervisor-api/apps/), [LiteLLM routing](https://docs.litellm.ai/docs/routing), [pinned release](https://github.com/BerriAI/litellm/releases/tag/v1.106.6).
 
-## API plans and rule examples
+## 📋 API plans and rule examples
 
 The [English README](../README.md) contains concrete alias/tool/catch-all rules and a dated table of official plan/limit sources. The editor distinguishes documentation examples from OpenRouter/DeepSeek account data. Currency balances are not token limits; unknown values stay unknown. Example limits only populate the form after a click.
